@@ -48,6 +48,7 @@ consultosec/
 │   └── vite.config.js      # Configuración de empaquetado
 │
 └── docker-compose.yml      # Orquestación de la BD local
+```
 
 ---
 
