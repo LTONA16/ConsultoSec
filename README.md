@@ -1,5 +1,4 @@
 # ConsultoSec
-# 🛡️ ConsultoSec
 
 ConsultoSec es un sistema integral de gestión diseñado específicamente para consultorías de seguridad y control de calidad en laboratorios (químicos, metalúrgicos, industriales, etc.). 
 
