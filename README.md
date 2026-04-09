@@ -63,8 +63,8 @@ Asegúrate de tener instalado:
 
 ### 1. Clonar el repositorio
 ```bash
-git clone [https://github.com/tu-usuario/consultosec.git](https://github.com/tu-usuario/consultosec.git)
-cd consultosec
+git clone [https://github.com/LTONA16/ConsultoSec.git](https://github.com/LTONA16/ConsultoSec.git)
+cd ConsultoSec
 ```
 
 ### 2. Levantar la Base de Datos (PostgreSQL)
