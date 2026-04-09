@@ -1,0 +1,54 @@
+# =========================
+# Backend (Python / Django)
+# =========================
+# Ignorar el entorno virtual (muy importante)
+ConsultoSec/backend/venv/
+env/
+
+# Caché y archivos compilados de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Base de datos local (crítico no subirla, especialmente si usarás Postgres en producción)
+db.sqlite3
+*.sqlite3
+
+# Variables de entorno y credenciales
+.env
+.env.*
+
+# =========================
+# Frontend (Node / Vite)
+# =========================
+# Dependencias pesadas
+ConsultoSec/frontend/node_modules/
+
+# Directorios de construcción (Vite genera 'dist' por defecto)
+ConsultoSec/frontend/dist/
+ConsultoSec/frontend/build/
+
+# Logs de errores de Node
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =========================
+# Docker
+# =========================
+# (Generalmente no se ignoran los Dockerfile ni docker-compose, 
+# pero sí los volúmenes de datos locales si los llegas a mapear en el futuro)
+.docker/
+pgdata/
+
+# =========================
+# OS / Entornos de Desarrollo
+# =========================
+# Archivos de macOS/Windows
+.DS_Store
+Thumbs.db
+
+# Configuraciones locales de editores (VS Code, IntelliJ, etc.)
+.vscode/
+.idea/
+*.swp
