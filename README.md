@@ -128,4 +128,3 @@ El proyecto está configurado para un despliegue continuo (CD) fluido:
 
 ---
 *Desarrollado para elevar los estándares de seguridad y calidad.*
-```
