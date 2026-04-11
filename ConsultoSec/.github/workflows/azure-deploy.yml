@@ -1,0 +1,70 @@
+name: Deploy ConsultoSec a Azure
+
+on:
+  push:
+    branches:
+      - main
+  # Permite ejecutar el pipeline manualmente desde la web de GitHub
+  workflow_dispatch:
+
+# Variables de entorno globales para no repetir código
+env:
+  BACKEND_DIR: 'backend'
+  FRONTEND_DIR: 'frontend'
+  IMAGE_NAME: 'consultosec-api'
+
+jobs:
+  # ==========================================
+  # TRABAJO 1: BACKEND (Django + Docker)
+  # ==========================================
+  deploy-backend:
+    name: Build & Deploy Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Login en Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Login en Azure Container Registry (ACR)
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Construir y subir imagen Docker
+        run: |
+          cd ${{ env.BACKEND_DIR }}
+          # Usamos el SHA del commit como etiqueta de la imagen para trazabilidad
+          docker build . -t ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Desplegar en Azure App Service
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ secrets.APP_SERVICE_NAME }}
+          images: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+  # ==========================================
+  # TRABAJO 2: FRONTEND (React + Vite)
+  # ==========================================
+  deploy-frontend:
+    name: Build & Deploy Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Desplegar en Azure Static Web Apps
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.SWA_DEPLOYMENT_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }} # Este token lo provee GitHub automáticamente
+          action: "upload"
+          app_location: "/frontend" # Dónde está tu package.json
+          api_location: "" # Se deja vacío porque el backend va separado
+          output_location: "dist" # La carpeta que genera Vite al compilar
