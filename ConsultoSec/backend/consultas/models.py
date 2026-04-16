@@ -1,6 +1,8 @@
 from django.db import models
+from django.conf import settings
 
 class Consulta(models.Model):
+    
     ESTADO_CHOICES = [
         ('agendada', 'Agendada'),
         ('revision_previa', 'Revision Previa'),
@@ -15,6 +17,7 @@ class Consulta(models.Model):
     titulo = models.CharField(max_length=200)
     descripcion = models.TextField()
     cliente = models.CharField(max_length=100)
+    responsables = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='consultas_asignadas', blank=True)
     estado = models.CharField(max_length=30, choices=ESTADO_CHOICES, default='agendada')
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
