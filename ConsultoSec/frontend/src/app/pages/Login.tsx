@@ -24,11 +24,15 @@ export function Login() {
     <div className="min-h-screen bg-[#F5F5F5] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-lg shadow-sm border border-[#E8E8E8] p-8">
-          {/* Logo placeholder */}
+          {/* Escudo Unison */}
           <div className="flex justify-center mb-6">
-            <div className="w-20 h-20 bg-[#003087] rounded-full flex items-center justify-center">
-              <GraduationCap className="w-12 h-12 text-white" />
-            </div>
+            <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-sm overflow-hidden border border-[#E8E8E8]">
+              <img
+                src="/logo.png"
+                alt="Logo"
+                className="w-full h-full object-contain"
+              />
+            </div>  
           </div>
 
           {/* Title and subtitle */}
@@ -48,7 +52,6 @@ export function Login() {
               <Input
                 id="email"
                 type="email"
-                placeholder="correo@unison.mx"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -79,9 +82,6 @@ export function Login() {
 
           {/* Helper text */}
           <p className="text-center text-[12px] text-gray-500 mt-6">
-            Demo: usa "admin@unison.mx" para ver vista de Administrador,
-            <br />
-            cualquier otro correo para vista de Consultor
           </p>
         </div>
       </div>

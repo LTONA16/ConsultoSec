@@ -11,24 +11,6 @@ export function DashboardAdmin() {
       icon: Clock,
       color: '#003087',
     },
-    {
-      label: 'Condiciones inseguras detectadas',
-      value: '47',
-      icon: AlertCircle,
-      color: '#E24B4A',
-    },
-    {
-      label: 'Propuestas aprobadas',
-      value: '35',
-      icon: CheckCircle2,
-      color: '#1D9E75',
-    },
-    {
-      label: 'Porcentaje de cumplimiento promedio',
-      value: '87%',
-      icon: TrendingUp,
-      color: '#BA7517',
-    },
   ];
 
   const labs = [
@@ -93,7 +75,7 @@ export function DashboardAdmin() {
           Dashboard de laboratorios
         </h1>
         <p className="text-[14px] text-gray-500 mt-1">
-          Vista general del sistema de consultoría
+          Vista general del sistema
         </p>
       </div>
 
