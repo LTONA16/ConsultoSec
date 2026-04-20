@@ -1,0 +1,656 @@
+[
+  {
+    "area": "Taller de carpintería",
+    "items": [
+      {
+        "requisito": "El área de trabajo se encuentra limpia y ordenada?",
+        "normativa_aplicable": "NOM-001-STPS-2008"
+      },
+      {
+        "requisito": "Pasillos y salidas de emergencia libres de obstrucciones?",
+        "normativa_aplicable": "NOM-001-STPS-2008"
+      },
+      {
+        "requisito": "Existe ventilación adecuada?",
+        "normativa_aplicable": "NOM-001-STPS-2008"
+      },
+      {
+        "requisito": "Los pisos se encuentran en buen estado?",
+        "normativa_aplicable": "NOM-001-STPS-2008"
+      },
+      {
+        "requisito": "Existe un programa de mantenimiento preventivo de equipos y materiales?",
+        "normativa_aplicable": "NOM-004-STPS-1999 y NOM-030-STPS-2009"
+      },
+      {
+        "requisito": "Existe señalización en áreas de riesgo?",
+        "normativa_aplicable": "NOM-017-STPS-2008"
+      },
+      {
+        "requisito": "Se cuenta con EPP en el área de trabajo?",
+        "normativa_aplicable": "NOM-017-STPS-2008"
+      },
+      {
+        "requisito": "El EPP se encuentra en buen estado?",
+        "normativa_aplicable": "NOM-017-STPS-2008"
+      },
+      {
+        "requisito": "El personal utiliza correctamente el EPP?",
+        "normativa_aplicable": "NOM-017-STPS-2008"
+      },
+      {
+        "requisito": "Se cuenta con extintores en el lugar de trabajo?",
+        "normativa_aplicable": "NOM-002-STPS-2010"
+      },
+      {
+        "requisito": "Están los extintores vigentes?",
+        "normativa_aplicable": "NOM-002-STPS-2010"
+      },
+      {
+        "requisito": "Existe señalización de emergencia visible?",
+        "normativa_aplicable": "NOM-002-STPS-2010"
+      },
+      {
+        "requisito": "¿Las máquinas (sierra, cepillo, torno, router) cuentan con guardas de seguridad?",
+        "normativa_aplicable": "NOM-004-STPS-1999"
+      },
+      {
+        "requisito": "¿Las herramientas eléctricas presentan cables en buen estado?",
+        "normativa_aplicable": "NOM-029-STPS-2011"
+      },
+      {
+        "requisito": "¿Existe acumulación visible de aserrín en pisos o máquinas?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿El piso se mantiene libre de restos de madera, clavos o tornillos?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Las máquinas (sierra, cepillo, torno, router) cuentan con guardas de seguridad?",
+        "normativa_aplicable": "NOM-004-STPS-1999"
+      },
+      {
+        "requisito": "Se cuenta con procedimientos estandarizados?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "Las herramientas y materiales tienen lugares asignados?",
+        "normativa_aplicable": "NOM-006-STPS-2014"
+      },
+      {
+        "requisito": "Se identifican claramente las áreas de trabajo y almacenamiento?",
+        "normativa_aplicable": "NOM-026-STPS-2008"
+      },
+      {
+        "requisito": "Se mantienen condiciones constantes de orden y limpieza?",
+        "normativa_aplicable": "NOM-001-STPS-2008"
+      },
+      {
+        "requisito": "Los materiales están identificados y etiquetados?",
+        "normativa_aplicable": "NOM-018-STPS-2015"
+      },
+      {
+        "requisito": "Existe control de inventarios?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "Se registran errores, defectos o incidentes?",
+        "normativa_aplicable": "NOM-030-STPS-2009"
+      }
+    ]
+  },
+  {
+    "area": "Taller de lavado",
+    "items": [
+      {
+        "requisito": "¿El área de lavado está limpia y libre de obstáculos?",
+        "normativa_aplicable": "NOM-001-STPS-2008"
+      },
+      {
+        "requisito": "¿Los pisos cuentan con material antiderrapante o están en buen estado?",
+        "normativa_aplicable": "NOM-001-STPS-2008"
+      },
+      {
+        "requisito": "¿El área de lavado cuenta con drenaje funcional y no presenta encharcamientos durante la operación?",
+        "normativa_aplicable": "NOM-001-STPS-2008"
+      },
+      {
+        "requisito": "¿Los detergentes y químicos están correctamente etiquetados?",
+        "normativa_aplicable": "NOM-018-STPS-2015"
+      },
+      {
+        "requisito": "¿El personal usa guantes impermeables?",
+        "normativa_aplicable": "NOM-017-STPS-2008"
+      },
+      {
+        "requisito": "¿Se utilizan botas antiderrapantes?",
+        "normativa_aplicable": "NOM-017-STPS-2008"
+      },
+      {
+        "requisito": "¿El Equipo de Protección Personal se encuentra en buen estado?",
+        "normativa_aplicable": "NOM-017-STPS-2008"
+      },
+      {
+        "requisito": "¿Hay botiquín de primeros auxilios disponible?",
+        "normativa_aplicable": "NOM-030-STPS-2009"
+      },
+      {
+        "requisito": "¿Hay extintor y está vigente?",
+        "normativa_aplicable": "NOM-002-STPS-2010"
+      },
+      {
+        "requisito": "¿Las salidas de emergencia están libres?",
+        "normativa_aplicable": "NOM-002-STPS-2010, NOM-026-STPS-2008"
+      },
+      {
+        "requisito": "¿Existe señalización y control para la entrada, salida y estacionamiento de los vehículos durante el lavado?",
+        "normativa_aplicable": "NOM-026-STPS-2008"
+      },
+      {
+        "requisito": "¿Se almacenan los productos en un lugar seguro y ventilado?",
+        "normativa_aplicable": "NOM-005-STPS-1998, NOM-018-STPS-2015"
+      },
+      {
+        "requisito": "¿Los contactos eléctricos, extensiones y tableros están protegidos contra humedad y elevados del piso?",
+        "normativa_aplicable": "NOM-001-STPS-2008"
+      },
+      {
+        "requisito": "¿Los equipos eléctricos están conectados a contactos con tierra física?",
+        "normativa_aplicable": "NOM-001-STPS-2008"
+      },
+      {
+        "requisito": "Taller de lavado",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿El vehículo queda visiblemente limpio despues del lavado?",
+        "normativa_aplicable": "ISO 9001:2015"
+      },
+      {
+        "requisito": "¿Se sigue un orden definido en el lavado del vehículo?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se respeta el orden de las etapas (prelavado, lavado, enjuague, secado)?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se entrega el vehículo en el tiempo acordado?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se registra cada servicio realizado?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿El personal recibe capacitación continua?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se controla la presión del agua para evitar daños?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Las herramientas están en buen estado?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se reportan retrabajos o inconformidades?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Los detergentes son los autorizados por la universidad?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se evita el desperdicio de agua y detergente?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se realiza una revisión visual final del vehículo?",
+        "normativa_aplicable": null
+      }
+    ]
+  },
+  {
+    "area": "Laboratorio de mecatrónica básica",
+    "items": [
+      {
+        "requisito": "¿Los pasillos están libres de obstáculos?",
+        "normativa_aplicable": "NOM-001-STPS-2008"
+      },
+      {
+        "requisito": "¿Se cuenta con extintores vigentes y accesibles?",
+        "normativa_aplicable": "NOM-002-STPS-2010"
+      },
+      {
+        "requisito": "¿Existe botiquín de primeros auxilios disponible?",
+        "normativa_aplicable": "NOM-030-STPS-2009"
+      },
+      {
+        "requisito": "¿Se cuenta con reglamento visible del laboratorio?",
+        "normativa_aplicable": "NOM-030-STPS-2009"
+      },
+      {
+        "requisito": "¿Las mangueras están en buen estado (sin grietas o desgaste)?",
+        "normativa_aplicable": "NOM-004-STPS-1999"
+      },
+      {
+        "requisito": "¿Las conexiones están firmes y sin fugas?",
+        "normativa_aplicable": "NOM-004-STPS-1999"
+      },
+      {
+        "requisito": "¿Se verifica presión máxima antes de operar?",
+        "normativa_aplicable": "NOM-020-STPS-2011"
+      },
+      {
+        "requisito": "¿No se manipulan conexiones bajo presión?",
+        "normativa_aplicable": "NOM-020-STPS-2011"
+      },
+      {
+        "requisito": "¿Se evita doblar o pisar mangueras?",
+        "normativa_aplicable": "NOM-004-STPS-1999"
+      },
+      {
+        "requisito": "¿Se utilizan lentes de seguridad?",
+        "normativa_aplicable": "NOM-017-STPS-2008"
+      },
+      {
+        "requisito": "¿Los tableros están correctamente cerrados?",
+        "normativa_aplicable": "NOM-029-STPS-2011"
+      },
+      {
+        "requisito": "¿No hay extensiones sobrecargadas?",
+        "normativa_aplicable": "NOM-029-STPS-2011"
+      },
+      {
+        "requisito": "¿Las herramientas están organizadas?",
+        "normativa_aplicable": "NOM-001-STPS-2008"
+      },
+      {
+        "requisito": "¿Las herramientas están etiquetadas?",
+        "normativa_aplicable": "NOM-001-STPS-2008"
+      },
+      {
+        "requisito": "¿Se guardan mangueras enrolladas correctamente?",
+        "normativa_aplicable": "NOM-001-STPS-2008"
+      },
+      {
+        "requisito": "¿Las estaciones de trabajo están limpias al finalizar la práctica?",
+        "normativa_aplicable": "NOM-001-STPS-2008"
+      },
+      {
+        "requisito": "Laboratorio de mecatrónica básica",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Existe un objetivo?",
+        "normativa_aplicable": "ISO 9001:2015"
+      },
+      {
+        "requisito": "¿Se revisa el diagrama hidráulico antes de montar el circuito?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se identifican correctamente símbolos hidráulicos?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se verifica lista de materiales antes de iniciar?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se verifica presión de trabajo con manómetro?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se lleva bitácora de mantenimiento?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se registran fallas recurrentes?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se califican prácticas bajo criterios definidos?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se analizan incidentes para prevenir recurrencias?",
+        "normativa_aplicable": null
+      }
+    ]
+  },
+  {
+    "area": "Laboratorio de mecatrónica Avanzada",
+    "items": [
+      {
+        "requisito": "¿Los pasillos están libres de obstáculos?",
+        "normativa_aplicable": "NOM-001-STPS-2008"
+      },
+      {
+        "requisito": "¿Se cuenta con extintores vigentes y accesibles?",
+        "normativa_aplicable": "NOM-002-STPS-2010"
+      },
+      {
+        "requisito": "¿Existe botiquín de primeros auxilios disponible?",
+        "normativa_aplicable": "NOM-030-STPS-2009"
+      },
+      {
+        "requisito": "¿Se cuenta con reglamento visible del laboratorio?",
+        "normativa_aplicable": "NOM-030-STPS-2009"
+      },
+      {
+        "requisito": "¿Las mangueras están en buen estado (sin grietas o desgaste)?",
+        "normativa_aplicable": "NOM-004-STPS-1999"
+      },
+      {
+        "requisito": "¿Las conexiones están firmes y sin fugas?",
+        "normativa_aplicable": "NOM-004-STPS-1999"
+      },
+      {
+        "requisito": "¿Se verifica presión máxima antes de operar?",
+        "normativa_aplicable": "NOM-020-STPS-2011"
+      },
+      {
+        "requisito": "¿No se manipulan conexiones bajo presión?",
+        "normativa_aplicable": "NOM-020-STPS-2011"
+      },
+      {
+        "requisito": "¿Se evita doblar o pisar mangueras?",
+        "normativa_aplicable": "NOM-004-STPS-1999"
+      },
+      {
+        "requisito": "¿Se utilizan lentes de seguridad?",
+        "normativa_aplicable": "NOM-017-STPS-2008"
+      },
+      {
+        "requisito": "¿Los tableros están correctamente cerrados?",
+        "normativa_aplicable": "NOM-029-STPS-2011"
+      },
+      {
+        "requisito": "¿No hay extensiones sobrecargadas?",
+        "normativa_aplicable": "NOM-029-STPS-2011"
+      },
+      {
+        "requisito": "¿Las herramientas están organizadas y etiquetadas?",
+        "normativa_aplicable": "NOM-001-STPS-2008"
+      },
+      {
+        "requisito": "¿Se guardan mangueras enrolladas correctamente?",
+        "normativa_aplicable": "NOM-001-STPS-2008"
+      },
+      {
+        "requisito": "¿Las estaciones de trabajo están limpias al finalizar la práctica?",
+        "normativa_aplicable": "NOM-001-STPS-2008"
+      },
+      {
+        "requisito": "Laboratorio de mecatrónica Avanzada",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se establecen objetivos claros de aprendizaje?",
+        "normativa_aplicable": "ISO 9001:2015"
+      },
+      {
+        "requisito": "¿Se revisa el diagrama hidráulico antes de montar el circuito?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se identifican correctamente símbolos hidráulicos?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se verifica lista de materiales antes de iniciar?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se verifica presión de trabajo con manómetro?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se documentan resultados de simulación?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se lleva bitácora de mantenimiento?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se registran fallas recurrentes?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se califican prácticas bajo criterios definidos?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se analizan incidentes para prevenir recurrencias?",
+        "normativa_aplicable": null
+      }
+    ]
+  },
+  {
+    "area": "Laboratorio de manufactura avanzada",
+    "items": [
+      {
+        "requisito": "¿Existe señalización visible de seguridad?",
+        "normativa_aplicable": "NOM-026-STPS-2008"
+      },
+      {
+        "requisito": "¿Los botones de paro de emergencia funcionan correctamente?",
+        "normativa_aplicable": "NOM-004-STPS-1999"
+      },
+      {
+        "requisito": "¿Se realiza inspección visual antes de operar la máquina?",
+        "normativa_aplicable": "NOM-004-STPS-1999"
+      },
+      {
+        "requisito": "¿Las herramientas de corte están en buen estado?",
+        "normativa_aplicable": "NOM-004-STPS-1999"
+      },
+      {
+        "requisito": "¿Se usa ropa suelta, anillos o accesorios?",
+        "normativa_aplicable": "NOM-017-STPS-2008"
+      },
+      {
+        "requisito": "¿Se utilizan lentes de seguridad en todo momento?",
+        "normativa_aplicable": "NOM-017-STPS-2008"
+      },
+      {
+        "requisito": "¿Los productos químicos están etiquetados correctamente?",
+        "normativa_aplicable": "NOM-018-STPS-2015"
+      },
+      {
+        "requisito": "¿Los recipientes están cerrados y almacenados adecuadamente?",
+        "normativa_aplicable": "NOM-005-STPS-1998"
+      },
+      {
+        "requisito": "¿Existe ventilación adecuada en el área?",
+        "normativa_aplicable": "NOM-010-STPS-2014"
+      },
+      {
+        "requisito": "¿Se dispone de regadera y lavaojos de emergencia?",
+        "normativa_aplicable": "NOM-005-STPS-1998"
+      },
+      {
+        "requisito": "¿Extintores disponibles y vigentes?",
+        "normativa_aplicable": "NOM-002-STPS-2010"
+      },
+      {
+        "requisito": "¿No hay cables expuestos o dañados?",
+        "normativa_aplicable": "NOM-029-STPS-2011"
+      },
+      {
+        "requisito": "¿Los materiales están almacenados correctamente?",
+        "normativa_aplicable": "NOM-005-STPS-1998"
+      },
+      {
+        "requisito": "¿Se usan mascarillas o respiradores en procesos químicos?",
+        "normativa_aplicable": "NOM-017-STPS-2008"
+      },
+      {
+        "requisito": "Laboratorio de manufactura avanzada",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se calibran instrumentos de medición (vernier, micrómetro)?",
+        "normativa_aplicable": "ISO 9001:2015"
+      },
+      {
+        "requisito": "¿Se realiza inspección en proceso?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se monitorea temperatura del proceso quimico?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se registran resultados del tratamiento?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se lleva bitácora de prácticas o producción?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se documentan incidencias?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se conserva historial de mantenimiento?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿El personal conoce los procedimientos estándar?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se registra fecha de preparación de soluciones?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se realizan auditorías internas periódicas?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se cumplen normas de metrología aplicables?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se actualizan procedimientos documentados?",
+        "normativa_aplicable": null
+      }
+    ]
+  },
+  {
+    "area": "Laboratorio de Electrica",
+    "items": [
+      {
+        "requisito": "¿Las instalaciones eléctricas están en buen estado visible (sin cables expuestos o conexiones improvisadas)?",
+        "normativa_aplicable": "NOM-029-STPS-2011"
+      },
+      {
+        "requisito": "¿Las instalaciones eléctricas están en buen estado visible (sin cables expuestos o conexiones improvisadas)?",
+        "normativa_aplicable": "NOM-029-STPS-2011"
+      },
+      {
+        "requisito": "¿Los contactos y extensiones no presentan sobrecarga?",
+        "normativa_aplicable": "NOM-029-STPS-2011"
+      },
+      {
+        "requisito": "¿Existe sistema de puesta a tierra en el laboratorio?",
+        "normativa_aplicable": "NOM-029-STPS-2011"
+      },
+      {
+        "requisito": "¿Se cuenta con señalización de riesgo eléctrico visible?",
+        "normativa_aplicable": "NOM-026-STPS-2008"
+      },
+      {
+        "requisito": "¿Las rutas de evacuación están señalizadas y libres de obstáculos?",
+        "normativa_aplicable": "NOM-001-STPS-2008"
+      },
+      {
+        "requisito": "¿El laboratorio se mantiene limpio y ordenado?",
+        "normativa_aplicable": "NOM-001-STPS-2008"
+      },
+      {
+        "requisito": "¿El piso se mantiene seco y sin riesgos de contacto agua-electricidad?",
+        "normativa_aplicable": "NOM-001-STPS-2008"
+      },
+      {
+        "requisito": "¿Se cuenta con extintor tipo C (riesgo eléctrico)?",
+        "normativa_aplicable": "NOM-002-STPS-2010"
+      },
+      {
+        "requisito": "¿El extintor está vigente y señalizado?",
+        "normativa_aplicable": "NOM-002-STPS-2010"
+      },
+      {
+        "requisito": "¿El personal utiliza EPP cuando realiza prácticas eléctricas?",
+        "normativa_aplicable": "NOM-017-STPS-2008"
+      },
+      {
+        "requisito": "¿Se cuenta con botiquín de primeros auxilios?",
+        "normativa_aplicable": "-"
+      },
+      {
+        "requisito": "¿En caso de soldadura electrónica, existe ventilación adecuada?",
+        "normativa_aplicable": "NOM-010-STPS-2014"
+      },
+      {
+        "requisito": "¿El cautín o estación de soldadura se encuentra en buen estado?",
+        "normativa_aplicable": "-"
+      },
+      {
+        "requisito": "Laboratorio de Electrica",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Existen procedimientos documentados para el uso del laboratorio?",
+        "normativa_aplicable": "ISO 9001:2015"
+      },
+      {
+        "requisito": "¿Los equipos de medición (multímetros, osciloscopios, fuentes) están calibrados o verificados?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Existe registro de mantenimiento preventivo de los equipos?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se identifican claramente los equipos fuera de servicio?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Los materiales y componentes están identificados y organizados?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se controla el inventario de materiales y herramientas?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se registran fallas o incidentes durante las prácticas?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se evalúa periódicamente el desempeño del laboratorio?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Existe evidencia de mejora continua en el laboratorio?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Las prácticas están alineadas con los objetivos académicos?",
+        "normativa_aplicable": null
+      },
+      {
+        "requisito": "¿Se controla el acceso al laboratorio?",
+        "normativa_aplicable": null
+      }
+    ]
+  }
+]
