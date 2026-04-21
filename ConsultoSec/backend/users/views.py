@@ -1,4 +1,7 @@
 from rest_framework import generics
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 from .serializers import UserCreateSerializer
 from .permissions import IsAdminRole
@@ -22,3 +25,26 @@ class UserDetailView(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserCreateSerializer
     permission_classes = [IsAdminRole]
+
+class UserMeView(APIView):
+    """
+    Endpoint para obtener la información del usuario autenticado.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        serializer = UserCreateSerializer(user)
+        # Podríamos omitir datos sensibles (como pwd) en la respuesta, pero
+        # UserCreateSerializer por defecto no devuelve el 'password' si tiene write_only=True
+        # Por seguridad retornamos un diccionario simple en caso de que el serializer sea intrusivo:
+        
+        # Para que sea mas facil de leer y usar por el frontend:
+        return Response({
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "role": user.role,
+        })

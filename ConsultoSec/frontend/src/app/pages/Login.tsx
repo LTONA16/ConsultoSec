@@ -3,20 +3,36 @@ import { useNavigate } from 'react-router';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
+import { useAuth } from '../../features/auth/AuthContext';
 import { GraduationCap } from 'lucide-react';
 
 export function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simple mock authentication
-    if (email.includes('admin')) {
-      navigate('/admin');
-    } else {
-      navigate('/consultor');
+    setErrorMsg('');
+    setLoading(true);
+
+    try {
+      const userData = await login(email, password);
+      // Redirigimos basándonos en el ROL devuelto por el backend
+      if (userData.role === 'ADMIN') {
+        navigate('/admin');
+      } else if (userData.role === 'CONSULTOR') {
+        navigate('/consultor');
+      } else {
+        setErrorMsg('Rol no autorizado para acceder a este portal.');
+      }
+    } catch (error: any) {
+      setErrorMsg(error.message || 'Error al iniciar sesión');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -32,7 +48,7 @@ export function Login() {
                 alt="Logo"
                 className="w-full h-full object-contain"
               />
-            </div>  
+            </div>
           </div>
 
           {/* Title and subtitle */}
@@ -48,10 +64,10 @@ export function Login() {
           {/* Login form */}
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-[16px]">Correo</Label>
+              <Label htmlFor="email" className="text-[16px]">Usuario o Correo</Label>
               <Input
                 id="email"
-                type="email"
+                type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -72,11 +88,16 @@ export function Login() {
               />
             </div>
 
+            {errorMsg && (
+              <p className="text-red-500 text-[13px] text-center mt-2 font-medium">{errorMsg}</p>
+            )}
+
             <Button
               type="submit"
+              disabled={loading}
               className="w-full h-11 bg-[#003087] hover:bg-[#002366] text-white text-[16px]"
             >
-              Iniciar sesión
+              {loading ? 'Iniciando...' : 'Iniciar sesión'}
             </Button>
           </form>
 

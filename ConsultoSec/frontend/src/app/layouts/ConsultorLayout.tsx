@@ -1,8 +1,11 @@
-import { Outlet, Link, useLocation } from 'react-router';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router';
 import { LayoutDashboard, ClipboardList, GraduationCap, LogOut, ChevronDown } from 'lucide-react';
+import { useAuth } from '../../features/auth/AuthContext';
 
 export function ConsultorLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   // Definición de las rutas principales del consultor
   const navItems = [
@@ -66,13 +69,16 @@ export function ConsultorLayout() {
 
         {/* Sección de Salida */}
         <div className="p-4 border-t border-[#E8E8E8]">
-          <Link
-            to="/"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-[14px] text-gray-700 hover:bg-[#F5F5F5] transition-colors"
+          <button
+            onClick={() => {
+              logout();
+              navigate('/');
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-[14px] text-gray-700 hover:bg-[#F5F5F5] transition-colors"
           >
             <LogOut className="w-5 h-5" />
             Cerrar sesión
-          </Link>
+          </button>
         </div>
       </aside>
 
@@ -83,16 +89,16 @@ export function ConsultorLayout() {
           <div className="flex items-center justify-end">
             <div className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 pr-3 rounded-xl transition-colors border border-transparent hover:border-[#E8E8E8]">
               {/* Avatar con iniciales */}
-              <div className="w-9 h-9 rounded-full bg-[#003087] flex items-center justify-center text-white text-[13px] font-semibold tracking-wider">
-                JP
+              <div className="w-9 h-9 rounded-full bg-[#003087] flex items-center justify-center text-white text-[13px] font-semibold tracking-wider uppercase">
+                {user ? user.first_name?.[0] : "JU"}
               </div>
 
               <div className="flex flex-col text-left">
                 <span className="text-[14px] font-semibold text-gray-900 leading-tight">
-                  Juan Pérez
+                  {user ? `${user.first_name} ${user.last_name}` : "Jesús Uzcanga"}
                 </span>
                 <span className="text-[12px] text-gray-500 font-medium">
-                  Consultor
+                  {user ? user.role : "Consultor"}
                 </span>
               </div>
               <ChevronDown className="w-4 h-4 text-gray-400 ml-1" />
