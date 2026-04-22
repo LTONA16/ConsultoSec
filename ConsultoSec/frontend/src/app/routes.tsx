@@ -22,6 +22,8 @@ export const router = createBrowserRouter([
       { index: true, element: <DashboardAdmin /> },
       { path: "solicitudes", element: <Solicitudes /> },
       { path: "usuarios", element: <Usuarios /> },
+      { path: "capacitaciones", element: <Capacitaciones /> },
+
     ],
   },
   {
