@@ -33,6 +33,7 @@ INSTALLED_APPS = [
 
     # Apps
     'consultas',
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -104,6 +105,18 @@ AUTH_PASSWORD_VALIDATORS = [
 REST_FRAMEWORK = {
     # Le decimos a DRF que use drf-spectacular para generar el esquema de la API
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=14),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'UPDATE_LAST_LOGIN': True,
 }
 
 # Configuracion de tu documentacion Swagger
@@ -112,8 +125,15 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'Documentación interactiva de los servicios para el sistema ConsultoSec.',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False, # Oculta el endpoint del esquema crudo en la UI
-    # Aquí puedes añadir más cosas luego, como esquemas de seguridad (Tokens, JWT)
+    # Para que Swagger incluya el boton de login de SimpleJWT:
+    'SECURITY': [{'jwt': []}],
 }
+
+# Habilitar autenticar por email o username
+AUTHENTICATION_BACKENDS = [
+    'users.backends.EmailOrUsernameModelBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 # CORS Config
 # Permitimos que nuestro frontend local hable con la API
@@ -137,3 +157,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+AUTH_USER_MODEL = 'users.User'

@@ -120,6 +120,62 @@ Con el backend corriendo, visita:
 
 ---
 
+## 🌿 Flujo de Trabajo en Git
+
+Para mantener el orden en el repositorio, sigue estas instrucciones:
+
+### Obtener los últimos cambios
+Siempre mantén tu entorno local actualizado antes de empezar a trabajar:
+```bash
+# Descarga la información de todas las ramas
+git fetch --all
+
+# Trae y fusiona los cambios de la rama actual
+git pull
+```
+
+### Crear una nueva rama (Feature o Bugfix)
+Para trabajar en una nueva funcionalidad o corrección, crea una rama desde `staging`. Utilizamos la siguiente nomenclatura para el nombre de las ramas:
+`tipo/[be o fe]-[descripcion-corta]`
+
+* **tipo:** `feat` (nueva funcionalidad), `fix` (corrección de error), `docs` (documentación), etc.
+* **[be o fe]:** `be` para Backend, `fe` para Frontend.
+* **descripcion:** Breve, en minúsculas y separada por guiones.
+
+Ejemplo de cómo crear y subir una nueva rama:
+```bash
+# Asegúrate de partir desde staging actualizado
+git checkout staging
+git pull origin staging
+
+# Crea la nueva rama y muévete a ella
+git checkout -b feat/be-endpoint-usuarios
+
+# Realiza tus cambios y haz el commit
+git add .
+git commit -m "Agregado endpoint para listar usuarios"
+
+# Sube la nueva rama al repositorio remoto (la primera vez)
+git push -u origin feat/be-endpoint-usuarios
+```
+
+### Subir cambios (Push)
+> **⚠️ IMPORTANTE:** Está **estrictamente prohibido** hacer push directo a la rama `main`. Todos los cambios deben enviarse primero a la rama de `staging` o a tu rama de desarrollo.
+
+Para subir tus cambios a staging:
+```bash
+# Asegúrate de estar en la rama staging (o tu rama de feature)
+git checkout staging
+
+# Es buena práctica hacer pull antes de intentar subir para evitar conflictos
+git pull origin staging
+
+# Sube tus cambios a la rama staging
+git push origin staging
+```
+
+---
+
 ## ☁️ Despliegue (Producción)
 
 El proyecto está configurado para un despliegue continuo (CD) fluido:
