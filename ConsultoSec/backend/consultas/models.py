@@ -49,6 +49,7 @@ class Consulta(models.Model):
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
     fecha_finalizacion = models.DateTimeField(null=True, blank=True)
+    fecha_finalizacion_propuesta = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Consulta"
