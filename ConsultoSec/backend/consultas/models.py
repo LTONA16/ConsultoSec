@@ -148,9 +148,29 @@ class PropuestaMejora(models.Model):
         choices=ESTADO_CHOICES, 
         default='pendiente'
     )
+    motivo_rechazo = models.TextField(blank=True, null=True, help_text="Razón por la cual se rechazó la propuesta")
     
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Propuesta #{self.pk} - Item {self.item_checklist.id}"
+    
+class Actividad(models.Model):
+    ESTADO_CHOICES = [
+        ('pendiente', 'Pendiente'),
+        ('en_progreso', 'En Progreso'),
+        ('completada', 'Completada'),
+    ]
+
+    propuesta = models.OneToOneField(
+        PropuestaMejora, 
+        on_delete=models.CASCADE, 
+        related_name='actividad_vinculada'
+    )
+    descripcion = models.TextField()
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='pendiente')
+
+    def __str__(self):
+        return f"Actividad para Propuesta #{self.propuesta.id}"
