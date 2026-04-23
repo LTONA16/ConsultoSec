@@ -6,7 +6,8 @@ from .views import ConsultaViewSet, ChecklistItemViewSet, AreaCatalogoViewSet, R
 router = DefaultRouter()
 router.register(r'areas-laboratorio', AreaCatalogoViewSet)
 router.register(r'requisitos-laboratorio', RequisitoCatalogoViewSet)
-router.register(r'consultas', ConsultaViewSet)
+#router.register(r'consultas', ConsultaViewSet)
+router.register(r'solicitudes', ConsultaViewSet, basename='solicitudes')
 router.register(r'checklists', ChecklistItemViewSet)
 
 urlpatterns = [

@@ -22,3 +22,18 @@ class ConsultaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Consulta
         fields = '__all__'
+
+class SolicitudCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Consulta
+        # Definimos los campos que el Frontend puede enviar al crear
+        fields = ['id', 'area_laboratorio', 'notas', 'responsables']
+        
+    def validate_area_laboratorio(self, value):
+        """
+        Validación personalizada: Asegura que siempre se envíe un área 
+        para que el signal 'generar_checklist' funcione correctamente.
+        """
+        if not value:
+            raise serializers.ValidationError("El área de laboratorio es obligatoria para procesar la solicitud.")
+        return value
