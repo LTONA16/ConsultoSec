@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Consulta, ChecklistItem, AreaCatalogo, RequisitoCatalogo
+from .models import Consulta, ChecklistItem, AreaCatalogo, RequisitoCatalogo, PropuestaMejora
 
 class AreaCatalogoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -37,3 +37,31 @@ class SolicitudCreateSerializer(serializers.ModelSerializer):
         if not value:
             raise serializers.ValidationError("El área de laboratorio es obligatoria para procesar la solicitud.")
         return value
+    
+class PropuestaMejoraSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PropuestaMejora
+        fields = '__all__'
+        read_only_fields = ['estado', 'fecha_creacion']
+
+    def validate(self, data):
+        """
+        Validación cruzada: El ítem debe pertenecer a la consulta 
+        y debe estar marcado como 'No cumple'.
+        """
+        item = data['item_checklist']
+        consulta = data['consulta']
+
+        # Verificar pertenencia
+        if item.consulta != consulta:
+            raise serializers.ValidationError(
+                "El ítem no pertenece a la auditoría especificada."
+            )
+
+        # SCRUM-55: Validación de estado
+        if item.cumple != 'no':
+            raise serializers.ValidationError({
+                "item_checklist": "Solo los ítems marcados como 'No cumple' pueden generar una propuesta de mejora."
+            })
+            
+        return data

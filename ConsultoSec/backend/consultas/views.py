@@ -1,6 +1,6 @@
 from rest_framework import viewsets
-from .models import Consulta, ChecklistItem, AreaCatalogo, RequisitoCatalogo
-from .serializers import ConsultaSerializer, ChecklistItemSerializer, AreaCatalogoSerializer, RequisitoCatalogoSerializer, SolicitudCreateSerializer
+from .models import Consulta, ChecklistItem, AreaCatalogo, PropuestaMejora, RequisitoCatalogo
+from .serializers import ConsultaSerializer, ChecklistItemSerializer, AreaCatalogoSerializer, RequisitoCatalogoSerializer, SolicitudCreateSerializer, PropuestaMejoraSerializer
 
 class AreaCatalogoViewSet(viewsets.ModelViewSet):
     queryset = AreaCatalogo.objects.all()
@@ -23,3 +23,8 @@ class ConsultaViewSet(viewsets.ModelViewSet):
 class ChecklistItemViewSet(viewsets.ModelViewSet):
     queryset = ChecklistItem.objects.all()
     serializer_class = ChecklistItemSerializer
+
+class PropuestaMejoraViewSet(viewsets.ModelViewSet):
+    queryset = PropuestaMejora.objects.all()
+    serializer_class = PropuestaMejoraSerializer
+
