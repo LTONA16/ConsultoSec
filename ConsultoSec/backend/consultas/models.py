@@ -72,24 +72,6 @@ class Consulta(models.Model):
             
         super().save(*args, **kwargs)
 
-class Capacitacion(models.Model):
-    tema = models.CharField(max_length=255)
-    fecha = models.DateField()
-    responsable = models.CharField(max_length=255)
-    asistentes = models.JSONField(blank=True, default=list)
-
-    consulta = models.ForeignKey(
-        'Consulta',
-        on_delete=models.CASCADE,
-        related_name='capacitaciones'
-    )
-
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_modificacion = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.tema
-    
 class Evidencia(models.Model):
     consulta = models.ForeignKey(
         Consulta, 
@@ -103,7 +85,6 @@ class Evidencia(models.Model):
     def __str__(self):
         # Actualizado para que apunte al ID de la consulta en lugar del título borrado
         return f"Evidencia de Consulta #{self.consulta.pk}"
-
 
 class ChecklistItem(models.Model):
     CUMPLE_CHOICES = [
@@ -150,3 +131,57 @@ def generar_checklist(sender, instance, created, **kwargs):
                 ChecklistItem.objects.bulk_create(items_to_create)
         except Exception as e:
             print(f"Error generando checklist desde catálogo: {e}")
+
+class PropuestaMejora(models.Model):
+    ESTADO_CHOICES = [
+        ('pendiente', 'Pendiente'),
+        ('en_revision', 'En Revisión'),
+        ('implementada', 'Implementada'),
+        ('rechazada', 'Rechazada'),
+    ]
+
+    consulta = models.ForeignKey(
+        Consulta, 
+        on_delete=models.CASCADE, 
+        related_name='propuestas_mejora'
+    )
+    item_checklist = models.OneToOneField(
+        ChecklistItem, 
+        on_delete=models.CASCADE, 
+        related_name='propuesta'
+    )
+    
+    descripcion = models.TextField(help_text="Descripción detallada de la mejora")
+    justificacion = models.TextField(help_text="Por qué es necesaria esta acción")
+    
+    estado = models.CharField(
+        max_length=20, 
+        choices=ESTADO_CHOICES, 
+        default='pendiente'
+    )
+    motivo_rechazo = models.TextField(blank=True, null=True, help_text="Razón por la cual se rechazó la propuesta")
+    
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Propuesta #{self.pk} - Item {self.item_checklist.id}"
+    
+class Actividad(models.Model):
+    ESTADO_CHOICES = [
+        ('pendiente', 'Pendiente'),
+        ('en_progreso', 'En Progreso'),
+        ('completada', 'Completada'),
+    ]
+
+    propuesta = models.OneToOneField(
+        PropuestaMejora, 
+        on_delete=models.CASCADE, 
+        related_name='actividad_vinculada'
+    )
+    descripcion = models.TextField()
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='pendiente')
+
+    def __str__(self):
+        return f"Actividad para Propuesta #{self.propuesta.id}"
