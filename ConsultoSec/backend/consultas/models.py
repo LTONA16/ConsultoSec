@@ -55,6 +55,7 @@ class Consulta(models.Model):
     fecha_finalizacion = models.DateTimeField(null=True, blank=True)
     fecha_finalizacion_propuesta = models.DateTimeField(null=True, blank=True)
 
+
     class Meta:
         verbose_name = "Consulta"
         verbose_name_plural = "Consultas"
@@ -71,7 +72,24 @@ class Consulta(models.Model):
             
         super().save(*args, **kwargs)
 
+class Capacitacion(models.Model):
+    tema = models.CharField(max_length=255)
+    fecha = models.DateField()
+    responsable = models.CharField(max_length=255)
+    asistentes = models.JSONField(blank=True, default=list)
 
+    consulta = models.ForeignKey(
+        'Consulta',
+        on_delete=models.CASCADE,
+        related_name='capacitaciones'
+    )
+
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_modificacion = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.tema
+    
 class Evidencia(models.Model):
     consulta = models.ForeignKey(
         Consulta, 

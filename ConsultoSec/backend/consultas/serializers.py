@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Consulta, ChecklistItem, AreaCatalogo, RequisitoCatalogo
+from .models import Consulta, ChecklistItem, AreaCatalogo, RequisitoCatalogo, Capacitacion
+
 
 class AreaCatalogoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -22,4 +23,9 @@ class ConsultaSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Consulta
+        fields = '__all__'
+
+class CapacitacionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Capacitacion
         fields = '__all__'
