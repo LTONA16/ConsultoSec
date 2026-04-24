@@ -2,12 +2,9 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from .models import Consulta, ChecklistItem, AreaCatalogo, PropuestaMejora, RequisitoCatalogo, Actividad
-from .serializers import ConsultaSerializer, ChecklistItemSerializer, AreaCatalogoSerializer, RequisitoCatalogoSerializer, SolicitudCreateSerializer, PropuestaMejoraSerializer
+from .models import Consulta, ChecklistItem, AreaCatalogo, PropuestaMejora, RequisitoCatalogo, Actividad, Capacitacion
+from .serializers import ConsultaSerializer, ChecklistItemSerializer, AreaCatalogoSerializer, RequisitoCatalogoSerializer, SolicitudCreateSerializer, PropuestaMejoraSerializer, CapacitacionSerializer
 from drf_spectacular.utils import extend_schema, OpenApiParameter
-from rest_framework import viewsets
-from .models import Consulta, ChecklistItem, AreaCatalogo, RequisitoCatalogo, Capacitacion
-from .serializers import ConsultaSerializer, ChecklistItemSerializer, AreaCatalogoSerializer, RequisitoCatalogoSerializer, CapacitacionSerializer
 
 class AreaCatalogoViewSet(viewsets.ModelViewSet):
     queryset = AreaCatalogo.objects.all()

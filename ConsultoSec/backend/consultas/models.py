@@ -185,3 +185,15 @@ class Actividad(models.Model):
 
     def __str__(self):
         return f"Actividad para Propuesta #{self.propuesta.id}"
+
+class Capacitacion(models.Model):
+    consulta = models.ForeignKey(Consulta, on_delete=models.CASCADE, related_name='capacitaciones')
+    tema = models.CharField(max_length=255)
+    fecha = models.DateField()
+    responsable = models.CharField(max_length=255)
+    asistentes = models.JSONField(blank=True, default=list)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_modificacion = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Capacitación: {self.tema} - {self.fecha}"

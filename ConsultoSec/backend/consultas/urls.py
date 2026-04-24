@@ -1,7 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import ConsultaViewSet, ChecklistItemViewSet, AreaCatalogoViewSet, PropuestaMejoraViewSet, RequisitoCatalogoViewSet
-from .views import ConsultaViewSet, ChecklistItemViewSet, AreaCatalogoViewSet, RequisitoCatalogoViewSet, CapacitacionViewSet
+from .views import ConsultaViewSet, ChecklistItemViewSet, AreaCatalogoViewSet, PropuestaMejoraViewSet, RequisitoCatalogoViewSet, CapacitacionViewSet
 
 # El router crea automáticamente las URLs para nuestro ViewSet
 router = DefaultRouter()

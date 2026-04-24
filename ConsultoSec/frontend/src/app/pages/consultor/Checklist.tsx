@@ -6,13 +6,6 @@ import { Button } from '../../components/ui/button';
 import { Textarea } from '../../components/ui/textarea';
 import { Label } from '../../components/ui/label';
 import { Input } from '../../components/ui/input';
-import { 
-  CheckCircle2, 
-  XCircle, 
-  AlertCircle, 
-  Camera, 
-  Save, 
-  AlertTriangle, 
 import {
   CheckCircle2,
   XCircle,
@@ -28,7 +21,7 @@ import {
   Trash2,
   LayoutGrid,
   PlusCircle,
-  Edit3
+  Edit3,
   HelpCircle,
   Send
 } from 'lucide-react';
@@ -49,6 +42,9 @@ export function Checklist() {
   const [isSavingInProgress, setIsSavingInProgress] = useState(false);
   const [isFinalizarModalOpen, setIsFinalizarModalOpen] = useState(false);
   const [isFinishing, setIsFinishing] = useState(false);
+  const [nuevaCatNombre, setNuevaCatNombre] = useState('');
+  const [preguntasDinamicas, setPreguntasDinamicas] = useState<any[]>([]);
+  const [ultimoIdAgregado, setUltimoIdAgregado] = useState('');
   const debounceTimers = useRef<Record<string, NodeJS.Timeout>>({});
 
   useEffect(() => {
@@ -210,14 +206,6 @@ export function Checklist() {
   const eliminarPregunta = (id: string) => {
     setPreguntasDinamicas(prev => prev.filter(q => q.id !== id));
   };
-
-  const handleRespuesta = (id: string, valor: string) => {
-    setRespuestas(prev => ({ ...prev, [id]: valor }));
-  };
-
-  const handleNota = (id: string, valor: string) => {
-    setNotas(prev => ({ ...prev, [id]: valor }));
-  };
   // Agrupación por categoría
   const secciones = consulta.items_checklist.reduce((acc: any[], curr) => {
     // Find if we already created this category
@@ -278,52 +266,56 @@ export function Checklist() {
                     <div className="space-y-6">
                       {/* Pregunta y Botones */}
                       <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
-                        <p className="text-[15px] text-gray-800 font-medium flex-1 pt-1">
-                          {q.requisito}
-                          {q.normativa_aplicable && (
-                            <span className="block mt-1 text-[12px] text-gray-500 font-normal">
-                              Ref: {q.normativa_aplicable}
-                            </span>
-                          )}
-                        </p>
+                        {(q as any).requisito ? (
+                          <>
+                            <p className="text-[15px] text-gray-800 font-medium flex-1 pt-1">
+                              {q.requisito}
+                              {q.normativa_aplicable && (
+                                <span className="block mt-1 text-[12px] text-gray-500 font-normal">
+                                  Ref: {q.normativa_aplicable}
+                                </span>
+                              )}
+                            </p>
 
-                        <div className="flex flex-wrap items-center gap-3">
-                          <div className="flex bg-gray-100 p-1 rounded-xl">
-                            <button
-                              onClick={() => handleRespuesta(q, 'si')}
-                              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-[11px] font-bold transition-all ${q.cumple === 'si' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                            >
-                              <CheckCircle2 className="w-4 h-4" /> CUMPLE
-                            </button>
-                            <button
-                              onClick={() => handleRespuesta(q, 'parcial')}
-                              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-[11px] font-bold transition-all ${q.cumple === 'parcial' ? 'bg-white text-amber-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                            >
-                              <AlertCircle className="w-4 h-4" /> PARCIAL
-                            </button>
-                            <button
-                              onClick={() => handleRespuesta(q, 'no')}
-                              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-[11px] font-bold transition-all ${q.cumple === 'no' ? 'bg-white text-red-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                            >
-                              <XCircle className="w-4 h-4" /> NO CUMPLE
-                            </button>
-                            <button
-                              title="No Evaluado"
-                              onClick={() => handleRespuesta(q, 'no_evaluado')}
-                              className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all ${q.cumple === 'no_evaluado' ? 'bg-gray-200 text-gray-600 shadow-inner' : 'text-gray-400 hover:text-gray-600'}`}
-                            >
-                              <HelpCircle className="w-4 h-4" />
-                            </button>
-                          </div>
+                            <div className="flex flex-wrap items-center gap-3">
+                              <div className="flex bg-gray-100 p-1 rounded-xl">
+                                <button
+                                  onClick={() => handleRespuesta(q, 'si')}
+                                  className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-[11px] font-bold transition-all ${q.cumple === 'si' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                >
+                                  <CheckCircle2 className="w-4 h-4" /> CUMPLE
+                                </button>
+                                <button
+                                  onClick={() => handleRespuesta(q, 'parcial')}
+                                  className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-[11px] font-bold transition-all ${q.cumple === 'parcial' ? 'bg-white text-amber-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                >
+                                  <AlertCircle className="w-4 h-4" /> PARCIAL
+                                </button>
+                                <button
+                                  onClick={() => handleRespuesta(q, 'no')}
+                                  className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-[11px] font-bold transition-all ${q.cumple === 'no' ? 'bg-white text-red-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                >
+                                  <XCircle className="w-4 h-4" /> NO CUMPLE
+                                </button>
+                                <button
+                                  title="No Evaluado"
+                                  onClick={() => handleRespuesta(q, 'no_evaluado')}
+                                  className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all ${q.cumple === 'no_evaluado' ? 'bg-gray-200 text-gray-600 shadow-inner' : 'text-gray-400 hover:text-gray-600'}`}
+                                >
+                                  <HelpCircle className="w-4 h-4" />
+                                </button>
+                              </div>
 
-                          <Button variant="outline" size="sm" className="h-10 border-[#E8E8E8] gap-2">
-                            <Camera className="w-4 h-4 text-gray-400" />
-                            Foto
-                          </Button>
-                        </div>
-                      ) : (
-                        <p className="text-[15px] text-gray-800 font-medium flex-1 pt-1">{q.pregunta}</p>
-                      )}
+                              <Button variant="outline" size="sm" className="h-10 border-[#E8E8E8] gap-2">
+                                <Camera className="w-4 h-4 text-gray-400" />
+                                Foto
+                              </Button>
+                            </div>
+                          </>
+                        ) : (
+                          <p className="text-[15px] text-gray-800 font-medium flex-1 pt-1">{(q as any).pregunta}</p>
+                        )}
+                      </div>
 
                       {/* Sección de Notas */}
                       <div className="bg-gray-50/50 p-4 rounded-lg border border-gray-100 space-y-2">
@@ -340,25 +332,12 @@ export function Checklist() {
                         />
                       </div>
                     </div>
-
-                    <div className="bg-gray-50/50 p-4 rounded-lg border border-gray-100 space-y-2">
-                      <Label className="text-[12px] flex items-center gap-2 text-gray-500 font-semibold">
-                        <MessageSquare className="w-3.5 h-3.5" /> Observaciones del Auditor
-                      </Label>
-                      <Textarea 
-                        placeholder="Escribe hallazgos..."
-                        className="bg-white border-[#E8E8E8] text-[13px] resize-none"
-                        rows={2}
-                        value={notas[q.id] || ''}
-                        onChange={(e) => handleNota(q.id, e.target.value)}
-                      />
-                    </div>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                ))}
             </div>
           </div>
-        ))}
+          ))
+        )}
 
         {/* Panel Inferior */}
         <div className="pt-6">
@@ -380,14 +359,6 @@ export function Checklist() {
             </div>
           </Card>
         </div>
-
-        {/* BOTÓN FINALIZAR (Pequeño y texto corregido) */}
-        <div className="fixed bottom-8 right-8">
-          <Button className="bg-[#003087] hover:bg-[#002366] text-white shadow-lg px-8 py-6 rounded-xl gap-2 font-bold transition-all active:scale-95 border-2 border-white">
-            <Save className="w-5 h-5" />
-            Finalizar Checklist
-          ))
-        )}
 
         {/* Botones Flotantes */}
         <div className="fixed bottom-8 right-8 flex flex-col gap-4 w-48 lg:w-56">

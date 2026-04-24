@@ -46,7 +46,7 @@ const API_URL = "http://localhost:8000/api";
 
 export const consultasService = {
   async obtenerConsultas(token: string): Promise<Consulta[]> {
-    const response = await fetch(`${API_URL}/consultas/`, {
+    const response = await fetch(`${API_URL}/solicitudes/`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -62,7 +62,7 @@ export const consultasService = {
   },
 
   async obtenerConsulta(token: string, id: number): Promise<Consulta> {
-    const response = await fetch(`${API_URL}/consultas/${id}/`, {
+    const response = await fetch(`${API_URL}/solicitudes/${id}/`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -78,7 +78,7 @@ export const consultasService = {
   },
 
   async actualizarConsulta(token: string, id: number, data: Partial<Consulta>): Promise<Consulta> {
-    const response = await fetch(`${API_URL}/consultas/${id}/`, {
+    const response = await fetch(`${API_URL}/solicitudes/${id}/`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -128,7 +128,7 @@ export const consultasService = {
   },
 
   async crearConsulta(token: string, data: Partial<Consulta>): Promise<Consulta> {
-    const response = await fetch(`${API_URL}/consultas/`, {
+    const response = await fetch(`${API_URL}/solicitudes/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

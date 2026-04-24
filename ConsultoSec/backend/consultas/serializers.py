@@ -1,7 +1,5 @@
 from rest_framework import serializers
-from .models import Consulta, ChecklistItem, AreaCatalogo, RequisitoCatalogo, PropuestaMejora
-from .models import Consulta, ChecklistItem, AreaCatalogo, RequisitoCatalogo, Capacitacion
-
+from .models import Consulta, ChecklistItem, AreaCatalogo, RequisitoCatalogo, PropuestaMejora, Capacitacion
 
 class AreaCatalogoSerializer(serializers.ModelSerializer):
     class Meta:
