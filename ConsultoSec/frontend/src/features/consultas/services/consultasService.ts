@@ -2,6 +2,7 @@ export interface ChecklistItem {
   id: number;
   consulta: number;
   area: string;
+  categoria: string;
   requisito: string;
   normativa_aplicable: string | null;
   cumple: 'si' | 'no' | 'parcial' | 'no_evaluado';
@@ -57,6 +58,48 @@ export const consultasService = {
       throw new Error("Error al obtener las consultas");
     }
 
+    return response.json();
+  },
+
+  async obtenerConsulta(token: string, id: number): Promise<Consulta> {
+    const response = await fetch(`${API_URL}/consultas/${id}/`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error al obtener la consulta ${id}`);
+    }
+
+    return response.json();
+  },
+
+  async actualizarConsulta(token: string, id: number, data: Partial<Consulta>): Promise<Consulta> {
+    const response = await fetch(`${API_URL}/consultas/${id}/`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error("Error al actualizar la consulta");
+    return response.json();
+  },
+
+  async actualizarChecklistItem(token: string, id: number, data: Partial<ChecklistItem>): Promise<ChecklistItem> {
+    const response = await fetch(`${API_URL}/checklists/${id}/`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error("Error al actualizar el item del checklist");
     return response.json();
   },
 

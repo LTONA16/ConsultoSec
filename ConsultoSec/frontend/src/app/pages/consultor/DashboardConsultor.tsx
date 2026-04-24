@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router';
 import { Card } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
@@ -8,15 +9,15 @@ import { useAuth } from '../../../features/auth/AuthContext';
 
 const getEstadoInfo = (estado: string) => {
   switch (estado) {
-    case 'agendada': return { label: 'Agendado', badgeColor: 'bg-gray-500', accion: 'Ver detalles' };
-    case 'revision_previa': return { label: 'Revisión Previa', badgeColor: 'bg-[#8B5CF6]', accion: 'Iniciar Revisión' };
-    case 'revision_verificacion': return { label: 'Revisión con Lista de Verificación', badgeColor: 'bg-[#003087]', accion: 'Continuar Checklist' };
-    case 'mejoras_solicitadas': return { label: 'En Mejoras', badgeColor: 'bg-[#F59E0B]', accion: 'Actualizar Gantt' };
-    case 'ultima_revision': return { label: 'Última Revisión', badgeColor: 'bg-[#8B5CF6]', accion: 'Generar Reporte' };
-    case 'finalizada': return { label: 'Finalizada', badgeColor: 'bg-[#1D9E75]', accion: 'Ver Reporte' };
-    case 'pendiente': return { label: 'Pendiente', badgeColor: 'bg-red-500', accion: 'Atender' };
-    case 'cancelada': return { label: 'Cancelada', badgeColor: 'bg-gray-800', accion: 'Ver detalles' };
-    default: return { label: estado, badgeColor: 'bg-gray-500', accion: 'Ver detalles' };
+    case 'agendada': return { label: 'Agendado', badgeColor: 'bg-gray-500', accion: 'Ver detalles', isChecklist: true };
+    case 'revision_previa': return { label: 'Revisión Previa', badgeColor: 'bg-[#8B5CF6]', accion: 'Iniciar Revisión', isChecklist: true };
+    case 'revision_verificacion': return { label: 'Revisión con Lista de Verificación', badgeColor: 'bg-[#003087]', accion: 'Continuar Checklist', isChecklist: true };
+    case 'mejoras_solicitadas': return { label: 'En Mejoras', badgeColor: 'bg-[#F59E0B]', accion: 'Actualizar Gantt', isChecklist: false };
+    case 'ultima_revision': return { label: 'Última Revisión', badgeColor: 'bg-[#8B5CF6]', accion: 'Generar Reporte', isChecklist: true };
+    case 'finalizada': return { label: 'Finalizada', badgeColor: 'bg-[#1D9E75]', accion: 'Ver Reporte', isChecklist: false };
+    case 'pendiente': return { label: 'Pendiente', badgeColor: 'bg-red-500', accion: 'Atender', isChecklist: false };
+    case 'cancelada': return { label: 'Cancelada', badgeColor: 'bg-gray-800', accion: 'Ver detalles', isChecklist: false };
+    default: return { label: estado, badgeColor: 'bg-gray-500', accion: 'Ver detalles', isChecklist: false };
   }
 };
 
@@ -27,6 +28,7 @@ const getProgress = (consulta: Consulta) => {
 };
 
 export function DashboardConsultor() {
+  const navigate = useNavigate();
   const { token } = useAuth();
   const [consultas, setConsultas] = useState<Consulta[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,6 +44,14 @@ export function DashboardConsultor() {
       });
     }
   }, [token]);
+
+  const handleAccion = (audit: Consulta, isChecklist: boolean) => {
+    if (isChecklist) {
+      navigate(`/consultor/checklist?id=${audit.id}&lab=${encodeURIComponent(audit.area_nombre || 'General')}`);
+    } else {
+      alert(`Navegar al seguimiento de ${audit.area_nombre ? `${audit.area_nombre} #${audit.id}` : `Consulta #${audit.id}`}`);
+    }
+  };
 
   const kpis = [
     { label: 'Auditorías asignadas', value: consultas.length.toString(), icon: ClipboardList, color: '#003087' },
@@ -72,7 +82,7 @@ export function DashboardConsultor() {
 
       return {
         titulo,
-        lab: c.area_nombre || 'Área no asignada',
+        lab: c.area_nombre ? `${c.area_nombre} #${c.id}` : `Consulta #${c.id}`,
         tipo,
         tiempo
       };
@@ -116,7 +126,13 @@ export function DashboardConsultor() {
         <div className="xl:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-[16px] font-semibold text-gray-900">Mis Auditorías Activas</h2>
-            <Button variant="ghost" className="text-[13px] text-[#003087] hover:bg-blue-50">Ver todas</Button>
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate('/consultor/auditorias')}
+              className="text-[13px] text-[#003087] hover:bg-blue-50"
+            >
+              Ver todas
+            </Button>
           </div>
           <div className="grid gap-4">
             {consultas.length === 0 ? (
@@ -131,7 +147,7 @@ export function DashboardConsultor() {
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-1">
-                        <h3 className="text-[15px] font-bold text-gray-900">{audit.area_nombre || `Consulta #${audit.id}`}</h3>
+                        <h3 className="text-[15px] font-bold text-gray-900">{audit.area_nombre ? `${audit.area_nombre} #${audit.id}` : `Consulta #${audit.id}`}</h3>
                         <Badge className={`${info.badgeColor} text-white text-[11px] font-medium px-2 py-0.5 border-none shadow-none`}>{info.label}</Badge>
                       </div>
                       <p className="text-[13px] text-gray-500 flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />Creada: {fechaStr}</p>
@@ -146,7 +162,10 @@ export function DashboardConsultor() {
                       </div>
                     </div>
 
-                    <Button className="w-full md:w-auto bg-white border border-[#E8E8E8] text-gray-700 hover:bg-gray-50 hover:text-[#003087] shadow-sm text-[13px]">
+                    <Button 
+                      onClick={() => handleAccion(audit, info.isChecklist)}
+                      className="w-full md:w-auto bg-white border border-[#E8E8E8] text-gray-700 hover:bg-gray-50 hover:text-[#003087] shadow-sm text-[13px]"
+                    >
                       {info.accion}<ChevronRight className="w-4 h-4 ml-1" />
                     </Button>
                   </div>

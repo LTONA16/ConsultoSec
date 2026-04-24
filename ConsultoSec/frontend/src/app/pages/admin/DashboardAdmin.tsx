@@ -69,7 +69,7 @@ export function DashboardAdmin() {
     const dateStr = new Date(c.fecha_creacion).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
     return {
       id: c.id,
-      name: c.area_nombre || `Auditoría #${c.id}`,
+      name: c.area_nombre ? `${c.area_nombre} #${c.id}` : `Auditoría #${c.id}`,
       lastAudit: dateStr,
       status: info.label,
       statusColor: info.statusColor,
@@ -80,7 +80,7 @@ export function DashboardAdmin() {
     const info = getEstadoInfo(c.estado);
     const dateStr = new Date(c.fecha_actualizacion || c.fecha_creacion).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
     return {
-      lab: c.area_nombre || `Auditoría #${c.id}`,
+      lab: c.area_nombre ? `${c.area_nombre} #${c.id}` : `Auditoría #${c.id}`,
       action: `Cambio de estado a: ${info.label}`,
       time: dateStr,
       user: 'Actualización del Sistema',

@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { Card } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Calendar, ClipboardCheck, ArrowRight, Wrench } from 'lucide-react';
+import { Input } from '../../components/ui/input';
+import { Calendar, ClipboardCheck, ArrowRight, Wrench, Search, Filter } from 'lucide-react';
 import { consultasService, Consulta } from '../../../features/consultas/services/consultasService';
 import { useAuth } from '../../../features/auth/AuthContext';
 
@@ -27,6 +28,11 @@ export function MisAuditorias() {
   const [auditorias, setAuditorias] = useState<Consulta[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Estados de filtro
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filtroLab, setFiltroLab] = useState('Todos');
+  const [filtroEstado, setFiltroEstado] = useState('Todos');
+
   useEffect(() => {
     if (token) {
       consultasService.obtenerConsultas(token).then((data) => {
@@ -39,11 +45,52 @@ export function MisAuditorias() {
     }
   }, [token]);
 
+  // Obtener opciones únicas
+  const laboratoriosUnicos = useMemo(() => {
+    const labs = new Set(auditorias.map(a => a.area_nombre || 'General'));
+    return ['Todos', ...Array.from(labs)];
+  }, [auditorias]);
+  
+  const estadosUnicos = [
+    'Todos', 
+    'Agendada', 
+    'Revisión Previa', 
+    'Revisión con Lista de Verificación', 
+    'En Mejoras', 
+    'Última Revisión', 
+    'Finalizada', 
+    'Pendiente', 
+    'Cancelada'
+  ];
+
+  // Aplicar filtros
+  const auditoriasFiltradas = auditorias.filter(audit => {
+    const labName = audit.area_nombre || 'General';
+    
+    // Búsqueda por ID o Nombre
+    if (searchTerm) {
+      const matchId = audit.id.toString() === searchTerm.trim() || `#${audit.id}` === searchTerm.trim();
+      const matchName = labName.toLowerCase().includes(searchTerm.toLowerCase());
+      if (!matchId && !matchName) return false;
+    }
+
+    // Filtro por Laboratorio
+    if (filtroLab !== 'Todos' && labName !== filtroLab) return false;
+
+    // Filtro por Estado
+    if (filtroEstado !== 'Todos') {
+      const info = getEstadoInfo(audit.estado);
+      if (info.label !== filtroEstado) return false;
+    }
+
+    return true;
+  });
+
   const handleAccion = (audit: Consulta, isChecklist: boolean) => {
     if (isChecklist) {
       navigate(`/consultor/checklist?id=${audit.id}&lab=${encodeURIComponent(audit.area_nombre || 'General')}`);
     } else {
-      alert(`Navegar al seguimiento de ${audit.area_nombre || `Consulta #${audit.id}`}`);
+      alert(`Navegar al seguimiento de ${audit.area_nombre ? `${audit.area_nombre} #${audit.id}` : `Consulta #${audit.id}`}`);
     }
   };
 
@@ -62,12 +109,67 @@ export function MisAuditorias() {
         <p className="text-[14px] text-gray-500 mt-1">Selecciona una auditoría pendiente para comenzar o continuar tu trabajo de campo.</p>
       </div>
 
-      <div className="grid gap-4">
-        {auditorias.length === 0 ? (
-          <div className="p-12 text-center text-gray-500 border border-dashed border-[#E8E8E8] rounded-xl bg-gray-50">
-            No tienes auditorías asignadas en este momento.
+      {/* Controles de Filtros */}
+      <Card className="p-4 border border-[#E8E8E8] bg-white shadow-sm flex flex-col md:flex-row gap-4 items-center">
+        <div className="relative flex-1 w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Input 
+            placeholder="Buscar por ID (#1) o nombre del laboratorio..." 
+            className="pl-9 h-10 border-[#E8E8E8] bg-gray-50/50 w-full"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        
+        <div className="flex w-full md:w-auto gap-4">
+          <div className="flex-1 md:w-48 relative">
+            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+            <select 
+              className="w-full h-10 pl-9 pr-4 text-[13px] border border-[#E8E8E8] rounded-md bg-white text-gray-700 outline-none focus:ring-2 focus:ring-[#003087] focus:border-transparent appearance-none"
+              value={filtroLab}
+              onChange={(e) => setFiltroLab(e.target.value)}
+            >
+              {laboratoriosUnicos.map((lab, index) => (
+                <option key={index} value={lab}>{lab}</option>
+              ))}
+            </select>
           </div>
-        ) : auditorias.map((audit) => {
+
+          <div className="flex-1 md:w-48 relative">
+            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+            <select 
+              className="w-full h-10 pl-9 pr-4 text-[13px] border border-[#E8E8E8] rounded-md bg-white text-gray-700 outline-none focus:ring-2 focus:ring-[#003087] focus:border-transparent appearance-none"
+              value={filtroEstado}
+              onChange={(e) => setFiltroEstado(e.target.value)}
+            >
+              {estadosUnicos.map((estado, index) => (
+                <option key={index} value={estado}>{estado}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </Card>
+
+      <div className="grid gap-4">
+        {auditoriasFiltradas.length === 0 ? (
+          <div className="p-12 text-center text-gray-500 border border-dashed border-[#E8E8E8] rounded-xl bg-gray-50 flex flex-col items-center gap-3">
+            <Search className="w-8 h-8 text-gray-300" />
+            <p>No se encontraron auditorías con los filtros seleccionados.</p>
+            {(searchTerm || filtroLab !== 'Todos' || filtroEstado !== 'Todos') && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  setSearchTerm('');
+                  setFiltroLab('Todos');
+                  setFiltroEstado('Todos');
+                }}
+              >
+                Limpiar filtros
+              </Button>
+            )}
+          </div>
+        ) : auditoriasFiltradas.map((audit) => {
           const info = getEstadoInfo(audit.estado);
           const fechaFormat = new Date(audit.fecha_creacion).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
 
@@ -77,7 +179,7 @@ export function MisAuditorias() {
 
                 <div className="space-y-2 flex-1">
                   <div className="flex items-center gap-3">
-                    <h3 className="text-[18px] font-bold text-gray-900">{audit.area_nombre || `Consulta #${audit.id}`}</h3>
+                    <h3 className="text-[18px] font-bold text-gray-900">{audit.area_nombre ? `${audit.area_nombre} #${audit.id}` : `Consulta #${audit.id}`}</h3>
                     <Badge className={`${info.badgeColor} text-white border-none px-2 py-0.5 text-[11px]`}>
                       {info.label}
                     </Badge>
