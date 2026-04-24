@@ -1,7 +1,11 @@
-import { Outlet, Link, useLocation } from 'react-router';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router';
 import { LayoutDashboard, FileText, Users, BarChart3, LogOut, ChevronDown } from 'lucide-react';
+import { useAuth } from '../../features/auth/AuthContext';
+
 export function AdminLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   const navItems = [
     { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -19,9 +23,9 @@ export function AdminLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] flex">
+    <div className="h-screen bg-[#F5F5F5] flex overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-[#E8E8E8] flex flex-col">
+      <aside className="w-64 bg-white border-r border-[#E8E8E8] flex flex-col h-full">
         <div className="p-6 border-b border-[#E8E8E8] flex items-center gap-3">
           {/* Contenedor circular blanco para el logo */}
           <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm overflow-hidden border border-[#E8E8E8] shrink-0">
@@ -51,8 +55,8 @@ export function AdminLayout() {
                 key={item.path}
                 to={item.path}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg text-[14px] transition-colors ${active
-                    ? 'bg-[#003087] text-white'
-                    : 'text-gray-700 hover:bg-[#F5F5F5]'
+                  ? 'bg-[#003087] text-white'
+                  : 'text-gray-700 hover:bg-[#F5F5F5]'
                   }`}
               >
                 <Icon className="w-5 h-5" />
@@ -63,36 +67,39 @@ export function AdminLayout() {
         </nav>
 
         <div className="p-4 border-t border-[#E8E8E8]">
-          <Link
-            to="/"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-[14px] text-gray-700 hover:bg-[#F5F5F5] transition-colors"
+          <button
+            onClick={() => {
+              logout();
+              navigate('/');
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-[14px] text-gray-700 hover:bg-[#F5F5F5] transition-colors"
           >
             <LogOut className="w-5 h-5" />
             Cerrar sesión
-          </Link>
+          </button>
         </div>
       </aside>
 
       {/* Main content */}
       <div className="flex-1 flex flex-col">
-       {/* Top bar */}
+        {/* Top bar */}
         <header className="bg-white border-b border-[#E8E8E8] px-8 py-3">
           <div className="flex items-center justify-end">
             {/* Perfil interactivo */}
             <div className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 pr-3 rounded-xl transition-colors border border-transparent hover:border-[#E8E8E8]">
 
               {/* Avatar circular */}
-              <div className="w-9 h-9 rounded-full bg-[#003087] flex items-center justify-center text-white text-[13px] font-semibold tracking-wider">
-                MV
+              <div className="w-9 h-9 rounded-full bg-[#003087] flex items-center justify-center text-white text-[13px] font-semibold tracking-wider uppercase">
+                {user ? user.first_name?.[0] : "MV"}
               </div>
 
               {/* Textos de Perfil */}
               <div className="flex flex-col text-left">
                 <span className="text-[14px] font-semibold text-gray-900 leading-tight">
-                  Maestra Viridiana
+                  {user ? `${user.first_name} ${user.last_name}` : "Maestra Viridiana"}
                 </span>
                 <span className="text-[12px] text-gray-500 font-medium">
-                  Administrador
+                  {user ? user.role : "Administrador"}
                 </span>
               </div>
 
