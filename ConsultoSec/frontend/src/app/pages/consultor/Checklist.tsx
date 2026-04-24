@@ -5,6 +5,14 @@ import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Textarea } from '../../components/ui/textarea';
 import { Label } from '../../components/ui/label';
+import { Input } from '../../components/ui/input';
+import { 
+  CheckCircle2, 
+  XCircle, 
+  AlertCircle, 
+  Camera, 
+  Save, 
+  AlertTriangle, 
 import {
   CheckCircle2,
   XCircle,
@@ -16,6 +24,11 @@ import {
   MessageSquare,
   ClipboardCheck,
   PauseCircle,
+  Plus,
+  Trash2,
+  LayoutGrid,
+  PlusCircle,
+  Edit3
   HelpCircle,
   Send
 } from 'lucide-react';
@@ -171,12 +184,56 @@ export function Checklist() {
     );
   }
 
+  const addNuevaPregunta = (categoriaEspecifica?: string) => {
+    const nuevoId = `custom_${Date.now()}`;
+    const nueva = {
+      id: nuevoId,
+      categoria: categoriaEspecifica || nuevaCatNombre || 'Adicional',
+      pregunta: '',
+      esNueva: true
+    };
+    setPreguntasDinamicas([...preguntasDinamicas, nueva]);
+    setUltimoIdAgregado(nuevoId);
+  };
+
+  const updateTextoPregunta = (id: string, texto: string) => {
+    setPreguntasDinamicas(prev => prev.map(q => q.id === id ? { ...q, pregunta: texto } : q));
+  };
+
+  // NUEVA FUNCIÓN: Permite cambiar el nombre de una sección completa
+  const updateNombreSeccion = (viejoNombre: string, nuevoNombre: string) => {
+    setPreguntasDinamicas(prev => prev.map(q => 
+      q.categoria === viejoNombre ? { ...q, categoria: nuevoNombre } : q
+    ));
+  };
+
+  const eliminarPregunta = (id: string) => {
+    setPreguntasDinamicas(prev => prev.filter(q => q.id !== id));
+  };
+
+  const handleRespuesta = (id: string, valor: string) => {
+    setRespuestas(prev => ({ ...prev, [id]: valor }));
+  };
+
+  const handleNota = (id: string, valor: string) => {
+    setNotas(prev => ({ ...prev, [id]: valor }));
+  };
   // Agrupación por categoría
   const secciones = consulta.items_checklist.reduce((acc: any[], curr) => {
     // Find if we already created this category
     const existing = acc.find(c => c.categoria === curr.categoria);
     if (existing) {
       existing.preguntas.push(curr);
+    } else {
+      acc.push({ categoria: curr.categoria, preguntas: [curr] });
+    }
+    return acc;
+  }, []);
+
+  const seccionesAgrupadas = preguntasDinamicas.reduce((acc: any[], curr) => {
+    const sectionIndex = acc.findIndex(s => s.categoria === curr.categoria);
+    if (sectionIndex !== -1) {
+      acc[sectionIndex].preguntas.push(curr);
     } else {
       acc.push({ categoria: curr.categoria, preguntas: [curr] });
     }
@@ -264,7 +321,9 @@ export function Checklist() {
                             Foto
                           </Button>
                         </div>
-                      </div>
+                      ) : (
+                        <p className="text-[15px] text-gray-800 font-medium flex-1 pt-1">{q.pregunta}</p>
+                      )}
 
                       {/* Sección de Notas */}
                       <div className="bg-gray-50/50 p-4 rounded-lg border border-gray-100 space-y-2">
@@ -281,10 +340,52 @@ export function Checklist() {
                         />
                       </div>
                     </div>
-                  </Card>
-                ))}
-              </div>
+
+                    <div className="bg-gray-50/50 p-4 rounded-lg border border-gray-100 space-y-2">
+                      <Label className="text-[12px] flex items-center gap-2 text-gray-500 font-semibold">
+                        <MessageSquare className="w-3.5 h-3.5" /> Observaciones del Auditor
+                      </Label>
+                      <Textarea 
+                        placeholder="Escribe hallazgos..."
+                        className="bg-white border-[#E8E8E8] text-[13px] resize-none"
+                        rows={2}
+                        value={notas[q.id] || ''}
+                        onChange={(e) => handleNota(q.id, e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </Card>
+              ))}
             </div>
+          </div>
+        ))}
+
+        {/* Panel Inferior */}
+        <div className="pt-6">
+          <Card className="p-8 border-2 border-dashed border-gray-200 bg-gray-50/20 flex flex-col items-center space-y-5">
+            <div className="text-center">
+              <h3 className="text-[#003087] font-bold text-[16px]">¿Nueva categoría?</h3>
+              <p className="text-gray-400 text-[12px]">Crea una nueva sección personalizada</p>
+            </div>
+            <div className="flex w-full max-w-lg gap-3 bg-white p-2 rounded-xl border border-gray-200">
+              <Input 
+                placeholder="Nombre de sección..."
+                value={nuevaCatNombre}
+                onChange={(e) => setNuevaCatNombre(e.target.value)}
+                className="border-none focus-visible:ring-0 text-[14px]"
+              />
+              <Button onClick={() => addNuevaPregunta()} className="bg-[#003087] text-white hover:bg-[#002366] gap-2 px-6 h-10">
+                <Plus className="w-4 h-4" /> Crear
+              </Button>
+            </div>
+          </Card>
+        </div>
+
+        {/* BOTÓN FINALIZAR (Pequeño y texto corregido) */}
+        <div className="fixed bottom-8 right-8">
+          <Button className="bg-[#003087] hover:bg-[#002366] text-white shadow-lg px-8 py-6 rounded-xl gap-2 font-bold transition-all active:scale-95 border-2 border-white">
+            <Save className="w-5 h-5" />
+            Finalizar Checklist
           ))
         )}
 
@@ -310,7 +411,7 @@ export function Checklist() {
             <Send className="w-5 h-5" />
             Finalizar Auditoría
           </Button>
-        </div>
+        </div>  
       </div>
 
       <Dialog open={isFinalizarModalOpen} onOpenChange={setIsFinalizarModalOpen}>

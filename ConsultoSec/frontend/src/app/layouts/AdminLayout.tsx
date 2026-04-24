@@ -11,6 +11,7 @@ export function AdminLayout() {
     { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/admin/solicitudes', label: 'Solicitudes', icon: FileText },
     { path: '/admin/usuarios', label: 'Usuarios', icon: Users },
+    { path: '/admin/capacitaciones', label: 'Capacitaciones', icon: BarChart3 },
     { path: '/admin/reportes', label: 'Reportes', icon: BarChart3 },
   ];
 
