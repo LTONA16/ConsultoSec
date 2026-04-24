@@ -18,7 +18,6 @@ class ChecklistItemSerializer(serializers.ModelSerializer):
 
 class ConsultaSerializer(serializers.ModelSerializer):
     items_checklist = ChecklistItemSerializer(many=True, read_only=True)
-    area_nombre = serializers.ReadOnlyField(source='area_laboratorio.nombre')
 
     class Meta:
         model = Consulta
