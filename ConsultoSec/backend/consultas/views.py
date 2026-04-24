@@ -5,6 +5,9 @@ from django.shortcuts import get_object_or_404
 from .models import Consulta, ChecklistItem, AreaCatalogo, PropuestaMejora, RequisitoCatalogo, Actividad
 from .serializers import ConsultaSerializer, ChecklistItemSerializer, AreaCatalogoSerializer, RequisitoCatalogoSerializer, SolicitudCreateSerializer, PropuestaMejoraSerializer
 from drf_spectacular.utils import extend_schema, OpenApiParameter
+from rest_framework import viewsets
+from .models import Consulta, ChecklistItem, AreaCatalogo, RequisitoCatalogo, Capacitacion
+from .serializers import ConsultaSerializer, ChecklistItemSerializer, AreaCatalogoSerializer, RequisitoCatalogoSerializer, CapacitacionSerializer
 
 class AreaCatalogoViewSet(viewsets.ModelViewSet):
     queryset = AreaCatalogo.objects.all()
@@ -23,6 +26,18 @@ class ConsultaViewSet(viewsets.ModelViewSet):
             return SolicitudCreateSerializer
         # Para GET, PUT, PATCH, usa el serializador completo con los items anidados
         return ConsultaSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return Consulta.objects.none()
+            
+        # Administradores y superusuarios ven todas las auditorías
+        if user.is_superuser or getattr(user, 'role', '') == 'ADMIN':
+            return Consulta.objects.all()
+            
+        # Consultores solo ven las auditorías en las que están asignados como responsables
+        return Consulta.objects.filter(responsables=user).distinct()
 
 class ChecklistItemViewSet(viewsets.ModelViewSet):
     queryset = ChecklistItem.objects.all()
@@ -160,3 +175,6 @@ class PropuestaMejoraViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(propuesta)
         return Response(serializer.data, status=status.HTTP_200_OK)
+class CapacitacionViewSet(viewsets.ModelViewSet):
+    queryset = Capacitacion.objects.all()
+    serializer_class = CapacitacionSerializer
