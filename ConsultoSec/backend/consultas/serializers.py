@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Consulta, ChecklistItem, AreaCatalogo, RequisitoCatalogo, PropuestaMejora, Capacitacion
+from .models import Consulta, ChecklistItem, AreaCatalogo, RequisitoCatalogo, PropuestaMejora, Capacitacion, CapacitacionArchivo
 
 class AreaCatalogoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -66,7 +66,25 @@ class PropuestaMejoraSerializer(serializers.ModelSerializer):
             })
             
         return data
+class CapacitacionArchivoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CapacitacionArchivo
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        """Devuelve URL absoluta para el campo 'archivo' en respuestas GET."""
+        representation = super().to_representation(instance)
+        request = self.context.get('request')
+        if instance.archivo.name and request:
+            try:
+                representation['archivo'] = request.build_absolute_uri(instance.archivo.url)
+            except Exception:
+                pass  # Si el archivo no existe en disco, dejamos el path relativo
+        return representation
+
 class CapacitacionSerializer(serializers.ModelSerializer):
+    archivos = CapacitacionArchivoSerializer(many=True, read_only=True)
+
     class Meta:
         model = Capacitacion
         fields = '__all__'

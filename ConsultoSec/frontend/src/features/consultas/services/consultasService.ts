@@ -42,6 +42,29 @@ export interface Usuario {
   is_active?: boolean;
 }
 
+export interface CapacitacionArchivo {
+  id: number;
+  capacitacion: number;
+  archivo: string;  // URL del archivo
+  tipo: 'material' | 'evidencia';
+  nombre: string;
+  fecha_subida: string;
+}
+
+export interface Training {
+  id: number;
+  consultas: number[];
+  laboratorios: number[];
+  tema: string;
+  descripcion: string;
+  fecha: string;
+  responsable: string;
+  asistentes: number[];
+  archivos: CapacitacionArchivo[];
+  fecha_creacion?: string;
+  fecha_modificacion?: string;
+}
+
 const API_URL = "http://localhost:8000/api";
 
 export const consultasService = {
@@ -116,7 +139,7 @@ export const consultasService = {
   },
 
   async obtenerConsultores(token: string): Promise<Usuario[]> {
-    const response = await fetch(`${API_URL}/users/`, {
+    const response = await fetch(`${API_URL}/users/consultores/`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -138,5 +161,77 @@ export const consultasService = {
     });
     if (!response.ok) throw new Error("Error al crear la consulta");
     return response.json();
+  },
+
+  async obtenerCapacitaciones(token: string): Promise<Training[]> {
+    const response = await fetch(`${API_URL}/capacitaciones/`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+    });
+    if (!response.ok) throw new Error("Error al obtener capacitaciones");
+    return response.json();
+  },
+
+  async crearCapacitacion(token: string, data: Partial<Training>): Promise<Training> {
+    const response = await fetch(`${API_URL}/capacitaciones/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error("Error al crear la capacitación");
+    return response.json();
+  },
+
+  async actualizarCapacitacion(token: string, id: number, data: Partial<Training>): Promise<Training> {
+    const response = await fetch(`${API_URL}/capacitaciones/${id}/`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error("Error al actualizar la capacitación");
+    return response.json();
+  },
+
+  async subirArchivoCapacitacion(
+    token: string,
+    capacitacionId: number,
+    file: File,
+    tipo: 'material' | 'evidencia'
+  ): Promise<CapacitacionArchivo> {
+    const formData = new FormData();
+    formData.append('capacitacion', capacitacionId.toString());
+    formData.append('archivo', file);
+    formData.append('tipo', tipo);
+    formData.append('nombre', file.name);
+
+    const response = await fetch(`${API_URL}/capacitacion-archivos/`, {
+      method: "POST",
+      headers: {
+        // NO incluir Content-Type — el browser lo setea automáticamente con el boundary
+        "Authorization": `Bearer ${token}`
+      },
+      body: formData,
+    });
+    if (!response.ok) throw new Error(`Error al subir archivo: ${file.name}`);
+    return response.json();
+  },
+
+  async eliminarArchivoCapacitacion(token: string, archivoId: number): Promise<void> {
+    const response = await fetch(`${API_URL}/capacitacion-archivos/${archivoId}/`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      },
+    });
+    if (!response.ok) throw new Error("Error al eliminar el archivo");
   }
 };

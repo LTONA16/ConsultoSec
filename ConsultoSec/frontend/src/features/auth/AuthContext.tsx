@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { access, refresh } = await authService.login(email, password);
     localStorage.setItem("accessToken", access);
     localStorage.setItem("refreshToken", refresh);
-    
+
     // Obtener los datos del usuario con el nuevo token
     const userData = await authService.getCurrentUser(access);
     setUser(userData);
@@ -53,6 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem("refreshToken");
     setUser(null);
     setToken(null);
+    window.location.href = "/";
   };
 
   return (

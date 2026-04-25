@@ -1,9 +1,7 @@
-import os
-import json
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
 class AreaCatalogo(models.Model):
@@ -187,13 +185,47 @@ class Actividad(models.Model):
         return f"Actividad para Propuesta #{self.propuesta.id}"
 
 class Capacitacion(models.Model):
-    consulta = models.ForeignKey(Consulta, on_delete=models.CASCADE, related_name='capacitaciones')
+    consultas = models.ManyToManyField(Consulta, related_name='capacitaciones', blank=True)
+    laboratorios = models.ManyToManyField(AreaCatalogo, related_name='capacitaciones_asignadas', blank=True)
     tema = models.CharField(max_length=255)
+    descripcion = models.TextField(blank=True)
     fecha = models.DateField()
     responsable = models.CharField(max_length=255)
-    asistentes = models.JSONField(blank=True, default=list)
+    asistentes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='capacitaciones_asistidas', blank=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Capacitación: {self.tema} - {self.fecha}"
+
+
+class CapacitacionArchivo(models.Model):
+    TIPO_CHOICES = [
+        ('material', 'Material'),
+        ('evidencia', 'Evidencia'),
+    ]
+    capacitacion = models.ForeignKey(
+        Capacitacion,
+        on_delete=models.CASCADE,
+        related_name='archivos'
+    )
+    archivo = models.FileField(upload_to='consultosec/capacitaciones/%Y/%m/%d/')
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default='material')
+    nombre = models.CharField(max_length=255, blank=True)
+    fecha_subida = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.get_tipo_display()} - {self.nombre or self.archivo.name}"
+
+
+@receiver(post_delete, sender=CapacitacionArchivo)
+def eliminar_archivo_disco(sender, instance, **kwargs):
+    """Borra el archivo físico del disco cuando se elimina el registro."""
+    if instance.archivo and instance.archivo.name:
+        import os
+        try:
+            if os.path.isfile(instance.archivo.path):
+                os.remove(instance.archivo.path)
+        except Exception as e:
+            print(f"No se pudo eliminar el archivo del disco: {e}")
+
