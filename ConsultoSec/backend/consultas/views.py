@@ -1,10 +1,13 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.decorators import api_view, parser_classes
+from rest_framework.parsers import MultiPartParser, FormParser
 from django.shortcuts import get_object_or_404
-from .models import Consulta, ChecklistItem, AreaCatalogo, PropuestaMejora, RequisitoCatalogo, Actividad, Capacitacion, CapacitacionArchivo
-from .serializers import ConsultaSerializer, ChecklistItemSerializer, AreaCatalogoSerializer, RequisitoCatalogoSerializer, SolicitudCreateSerializer, PropuestaMejoraSerializer, CapacitacionSerializer, CapacitacionArchivoSerializer
+from .models import Consulta, ChecklistItem, AreaCatalogo, PropuestaMejora, RequisitoCatalogo, Actividad, Capacitacion, CapacitacionArchivo, ChecklistItemPhoto
+from .serializers import ConsultaSerializer, ChecklistItemSerializer, AreaCatalogoSerializer, RequisitoCatalogoSerializer, SolicitudCreateSerializer, PropuestaMejoraSerializer, CapacitacionSerializer, CapacitacionArchivoSerializer, ChecklistItemPhotoSerializer
 from drf_spectacular.utils import extend_schema, OpenApiParameter
+
 
 class AreaCatalogoViewSet(viewsets.ModelViewSet):
     queryset = AreaCatalogo.objects.all()
@@ -179,3 +182,40 @@ class CapacitacionViewSet(viewsets.ModelViewSet):
 class CapacitacionArchivoViewSet(viewsets.ModelViewSet):
     queryset = CapacitacionArchivo.objects.all()
     serializer_class = CapacitacionArchivoSerializer
+
+@extend_schema(
+    request={
+        'multipart/form-data': {
+            'type': 'object',
+            'properties': {
+                'imagen': {
+                    'type': 'string',
+                    'format': 'binary'
+                },
+                'comentario': {
+                    'type': 'string'
+                },
+            },
+            'required': ['imagen'],
+        }
+    },
+    responses={201: ChecklistItemPhotoSerializer}
+)
+@api_view(['POST'])
+@parser_classes([MultiPartParser, FormParser])
+def upload_checklist_item_photo(request, item_id):
+    try:
+        item = ChecklistItem.objects.get(id=item_id)
+    except ChecklistItem.DoesNotExist:
+        return Response(
+            {"error": "El item del checklist no existe"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    serializer = ChecklistItemPhotoSerializer(data=request.data)
+
+    if serializer.is_valid():
+        serializer.save(item=item)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

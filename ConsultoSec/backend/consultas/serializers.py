@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Consulta, ChecklistItem, AreaCatalogo, RequisitoCatalogo, PropuestaMejora, Capacitacion, CapacitacionArchivo
+from .models import Consulta, ChecklistItem, AreaCatalogo, RequisitoCatalogo, PropuestaMejora, Capacitacion, CapacitacionArchivo,ChecklistItemPhoto
 
 class AreaCatalogoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -88,3 +88,9 @@ class CapacitacionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Capacitacion
         fields = '__all__'
+
+class ChecklistItemPhotoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChecklistItemPhoto
+        fields = ['id', 'item', 'imagen', 'comentario', 'fecha_subida']
+        read_only_fields = ['id', 'item', 'fecha_subida']

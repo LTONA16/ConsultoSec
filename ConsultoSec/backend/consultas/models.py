@@ -110,6 +110,19 @@ class ChecklistItem(models.Model):
 
     def __str__(self):
         return f"Checklist {self.consulta.pk} - {self.area}: {self.requisito[:20]}"
+    
+class ChecklistItemPhoto(models.Model):
+    item = models.ForeignKey(
+        ChecklistItem,
+        on_delete=models.CASCADE,
+        related_name='photos'
+    )
+    imagen = models.ImageField(upload_to='consultosec/checklist_photos/%Y/%m/%d/')
+    comentario = models.CharField(max_length=255, blank=True)
+    fecha_subida = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Foto de item #{self.item_id}"    
 
 @receiver(post_save, sender=Consulta)
 def generar_checklist(sender, instance, created, **kwargs):

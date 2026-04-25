@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import ConsultaViewSet, ChecklistItemViewSet, AreaCatalogoViewSet, PropuestaMejoraViewSet, RequisitoCatalogoViewSet, CapacitacionViewSet, CapacitacionArchivoViewSet
+from .views import ConsultaViewSet, ChecklistItemViewSet, AreaCatalogoViewSet, PropuestaMejoraViewSet, RequisitoCatalogoViewSet, CapacitacionViewSet, CapacitacionArchivoViewSet, upload_checklist_item_photo
 
 router = DefaultRouter()
 router.register(r'areas-laboratorio', AreaCatalogoViewSet)
@@ -13,4 +13,5 @@ router.register(r'capacitacion-archivos', CapacitacionArchivoViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('checklist/items/<int:item_id>/photos/', upload_checklist_item_photo),
 ]
