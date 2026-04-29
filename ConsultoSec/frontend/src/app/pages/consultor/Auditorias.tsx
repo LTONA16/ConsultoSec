@@ -121,7 +121,7 @@ export function MisAuditorias() {
 
       navigate(`/consultor/checklist?id=${audit.id}&lab=${encodeURIComponent(audit.area_nombre || 'General')}`);
     } else {
-      alert(`Navegar al seguimiento de ${audit.area_nombre ? `${audit.area_nombre} #${audit.id}` : `Auditoría #${audit.id}`}`);
+      navigate(`/consultor/seguimiento?id=${audit.id}&lab=${encodeURIComponent(audit.area_nombre || 'General')}`);
     }
   };
 

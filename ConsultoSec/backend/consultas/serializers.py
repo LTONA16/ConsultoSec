@@ -40,32 +40,13 @@ class SolicitudCreateSerializer(serializers.ModelSerializer):
         return value
     
 class PropuestaMejoraSerializer(serializers.ModelSerializer):
+    duracion_dias = serializers.ReadOnlyField()
+
     class Meta:
         model = PropuestaMejora
         fields = '__all__'
-        read_only_fields = ['estado', 'fecha_creacion']
+        read_only_fields = ['fecha_creacion']
 
-    def validate(self, data):
-        """
-        Validación cruzada: El ítem debe pertenecer a la consulta 
-        y debe estar marcado como 'No cumple'.
-        """
-        item = data['item_checklist']
-        consulta = data['consulta']
-
-        # Verificar pertenencia
-        if item.consulta != consulta:
-            raise serializers.ValidationError(
-                "El ítem no pertenece a la auditoría especificada."
-            )
-
-        # SCRUM-55: Validación de estado
-        if item.cumple != 'no':
-            raise serializers.ValidationError({
-                "item_checklist": "Solo los ítems marcados como 'No cumple' pueden generar una propuesta de mejora."
-            })
-            
-        return data
 class CapacitacionArchivoSerializer(serializers.ModelSerializer):
     class Meta:
         model = CapacitacionArchivo

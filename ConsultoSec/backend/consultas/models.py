@@ -131,11 +131,28 @@ def generar_checklist(sender, instance, created, **kwargs):
             print(f"Error generando checklist desde catálogo: {e}")
 
 class PropuestaMejora(models.Model):
+    PLAZO_CHOICES = [
+        ('corto', 'Corto Plazo'),
+        ('mediano', 'Mediano Plazo'),
+        ('largo', 'Largo Plazo'),
+    ]
     ESTADO_CHOICES = [
+        ('completado', 'Completado'),
+        ('en_proceso', 'En proceso'),
+        ('requiere_adquisicion', 'Requiere adquisición de insumos o presupuesto por parte del departamento'),
+        ('requiere_instalacion', 'Requiere instalación por parte de mantenimiento'),
+    ]
+    S_CHOICES = [
+        ('clasificar', 'Clasificar'),
+        ('ordenar', 'Ordenar'),
+        ('limpiar', 'Limpiar'),
+        ('estandarizar', 'Estandarizar'),
+        ('disciplina', 'Disciplina'),
+    ]
+    APROBACION_CHOICES = [
         ('pendiente', 'Pendiente'),
-        ('en_revision', 'En Revisión'),
-        ('implementada', 'Implementada'),
-        ('rechazada', 'Rechazada'),
+        ('aprobado', 'Aprobado'),
+        ('rechazado', 'Rechazado'),
     ]
 
     consulta = models.ForeignKey(
@@ -143,46 +160,38 @@ class PropuestaMejora(models.Model):
         on_delete=models.CASCADE, 
         related_name='propuestas_mejora'
     )
-    item_checklist = models.OneToOneField(
-        ChecklistItem, 
-        on_delete=models.CASCADE, 
-        related_name='propuesta'
-    )
-    
-    descripcion = models.TextField(help_text="Descripción detallada de la mejora")
-    justificacion = models.TextField(help_text="Por qué es necesaria esta acción")
-    
+    plazo = models.CharField(max_length=10, choices=PLAZO_CHOICES, default='corto')
+    numero_tarea = models.CharField(max_length=10, default='', help_text="Ej: 1.1, 2.3")
+    accion_correctiva = models.TextField(default='', help_text="Descripción de la acción correctiva")
+    responsables = models.JSONField(default=list, help_text="Lista de responsables seleccionados")
+    fecha_inicio = models.DateField(null=True, blank=True)
+    fecha_fin = models.DateField(null=True, blank=True)
+    s_implementada = models.CharField(max_length=20, choices=S_CHOICES, blank=True)
     estado = models.CharField(
-        max_length=20, 
+        max_length=30, 
         choices=ESTADO_CHOICES, 
+        default='en_proceso'
+    )
+    aprobacion = models.CharField(
+        max_length=15, 
+        choices=APROBACION_CHOICES, 
         default='pendiente'
     )
-    motivo_rechazo = models.TextField(blank=True, null=True, help_text="Razón por la cual se rechazó la propuesta")
     
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return f"Propuesta #{self.pk} - Item {self.item_checklist.id}"
-    
-class Actividad(models.Model):
-    ESTADO_CHOICES = [
-        ('pendiente', 'Pendiente'),
-        ('en_progreso', 'En Progreso'),
-        ('completada', 'Completada'),
-    ]
+    class Meta:
+        ordering = ['plazo', 'numero_tarea']
 
-    propuesta = models.OneToOneField(
-        PropuestaMejora, 
-        on_delete=models.CASCADE, 
-        related_name='actividad_vinculada'
-    )
-    descripcion = models.TextField()
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='pendiente')
+    @property
+    def duracion_dias(self):
+        if self.fecha_inicio and self.fecha_fin:
+            return (self.fecha_fin - self.fecha_inicio).days
+        return 0
 
     def __str__(self):
-        return f"Actividad para Propuesta #{self.propuesta.id}"
+        return f"Propuesta #{self.pk} - {self.get_plazo_display()} ({self.numero_tarea})"
 
 class Capacitacion(models.Model):
     consultas = models.ManyToManyField(Consulta, related_name='capacitaciones', blank=True)
