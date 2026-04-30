@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Badge } from '../../components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '../../components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../../components/ui/command';
-import { Calendar as CalendarIcon, UserPlus, ClipboardCheck, Search, Loader2, X, Check, ChevronsUpDown, ArrowUpDown, ArrowUpAZ, ArrowDownAZ } from 'lucide-react';
+import { Calendar as CalendarIcon, UserPlus, ClipboardCheck, Search, Loader2, X, Check, ChevronsUpDown, ArrowUpDown, ArrowUpAZ, ArrowDownAZ, Hash, CalendarClock } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../../../features/auth/AuthContext';
 import { consultasService, Consulta, AreaLaboratorio, Usuario } from '../../../features/consultas/services/consultasService';
@@ -51,6 +51,7 @@ export function Solicitudes() {
   const [submitting, setSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [consultorSort, setConsultorSort] = useState<'none' | 'asc' | 'desc'>('none');
+  const [solicitudSort, setSolicitudSort] = useState<'none' | 'id' | 'fecha'>('none');
 
   // Form State
   const [selectedArea, setSelectedArea] = useState<string>('');
@@ -108,8 +109,8 @@ export function Solicitudes() {
     try {
       let isoDate = null;
       if (fechaPropuesta) {
-        // Aseguramos formato ISO
-        isoDate = new Date(fechaPropuesta).toISOString();
+        // Enviamos la fecha con horario de mediodía para evitar desfase por timezone
+        isoDate = `${fechaPropuesta}T12:00:00`;
       }
 
       const payload: Partial<Consulta> = {
@@ -154,6 +155,14 @@ export function Solicitudes() {
     });
   };
 
+  const toggleSolicitudSort = () => {
+    setSolicitudSort(prev => {
+      if (prev === 'none') return 'id';
+      if (prev === 'id') return 'fecha';
+      return 'none';
+    });
+  };
+
   const getConsultorName = (sol: Consulta) => {
     if (!sol.responsables || sol.responsables.length === 0) return '';
     const c = consultores.find(co => co.id === sol.responsables[0]);
@@ -167,6 +176,14 @@ export function Solicitudes() {
       return areaName.includes(term);
     })
     .sort((a, b) => {
+      // Solicitud sort takes priority if active
+      if (solicitudSort === 'id') return a.id - b.id;
+      if (solicitudSort === 'fecha') {
+        const dateA = a.fecha_finalizacion_propuesta ? new Date(a.fecha_finalizacion_propuesta).getTime() : Infinity;
+        const dateB = b.fecha_finalizacion_propuesta ? new Date(b.fecha_finalizacion_propuesta).getTime() : Infinity;
+        return dateA - dateB;
+      }
+      // Otherwise use consultor sort
       if (consultorSort === 'none') return 0;
       const nameA = getConsultorName(a);
       const nameB = getConsultorName(b);
@@ -315,6 +332,20 @@ export function Solicitudes() {
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-[16px] font-semibold text-gray-900">Visitas Programadas</h2>
             <div className="flex items-center gap-2">
+              <Button
+                variant={solicitudSort === 'none' ? 'outline' : 'default'}
+                size="sm"
+                onClick={toggleSolicitudSort}
+                className={`h-9 text-[13px] gap-1.5 transition-all ${solicitudSort === 'none'
+                  ? 'text-gray-600 border-gray-300 hover:bg-gray-50'
+                  : 'bg-[#003087] hover:bg-[#002366] text-white'
+                  }`}
+              >
+                {solicitudSort === 'none' && <ArrowUpDown className="w-3.5 h-3.5" />}
+                {solicitudSort === 'id' && <Hash className="w-3.5 h-3.5" />}
+                {solicitudSort === 'fecha' && <CalendarClock className="w-3.5 h-3.5" />}
+                {solicitudSort === 'none' ? 'Ordenar' : solicitudSort === 'id' ? 'Por ID' : 'Fecha próxima'}
+              </Button>
               <Button
                 variant={consultorSort === 'none' ? 'outline' : 'default'}
                 size="sm"
