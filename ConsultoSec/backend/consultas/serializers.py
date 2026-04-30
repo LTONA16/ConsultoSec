@@ -24,6 +24,21 @@ class ConsultaSerializer(serializers.ModelSerializer):
         model = Consulta
         fields = '__all__'
 
+    def validate(self, attrs):
+        estado = attrs.get('estado', getattr(self.instance, 'estado', None))
+
+        if estado == 'finalizada' and self.instance:
+            checklist_incompleto = self.instance.items_checklist.filter(
+                cumple='no_evaluado'
+            ).exists()
+
+            if checklist_incompleto:
+                raise serializers.ValidationError({
+                    "estado": "No se puede finalizar la auditoría porque aún hay preguntas del checklist sin responder."
+                })
+
+        return attrs
+
 class SolicitudCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Consulta
