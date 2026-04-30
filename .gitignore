@@ -24,6 +24,8 @@ db.sqlite3
 # Dependencias pesadas
 ConsultoSec/frontend/node_modules/
 node_modules
+package-lock.json
+package.json
 
 # Directorios de construcción (Vite genera 'dist' por defecto)
 ConsultoSec/frontend/dist/
