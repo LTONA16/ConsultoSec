@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Badge } from '../../components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '../../components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../../components/ui/command';
-import { Calendar as CalendarIcon, UserPlus, ClipboardCheck, Search, Loader2, X, Check, ChevronsUpDown } from 'lucide-react';
+import { Calendar as CalendarIcon, UserPlus, ClipboardCheck, Search, Loader2, X, Check, ChevronsUpDown, ArrowUpDown, ArrowUpAZ, ArrowDownAZ } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../../../features/auth/AuthContext';
 import { consultasService, Consulta, AreaLaboratorio, Usuario } from '../../../features/consultas/services/consultasService';
@@ -50,6 +50,7 @@ export function Solicitudes() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [consultorSort, setConsultorSort] = useState<'none' | 'asc' | 'desc'>('none');
 
   // Form State
   const [selectedArea, setSelectedArea] = useState<string>('');
@@ -145,11 +146,34 @@ export function Solicitudes() {
     }
   };
 
-  const filteredSolicitudes = solicitudes.filter(sol => {
-    const term = searchTerm.toLowerCase();
-    const areaName = (sol.area_nombre ? `${sol.area_nombre} #${sol.id}` : `Consulta #${sol.id}`).toLowerCase();
-    return areaName.includes(term);
-  });
+  const toggleConsultorSort = () => {
+    setConsultorSort(prev => {
+      if (prev === 'none') return 'asc';
+      if (prev === 'asc') return 'desc';
+      return 'none';
+    });
+  };
+
+  const getConsultorName = (sol: Consulta) => {
+    if (!sol.responsables || sol.responsables.length === 0) return '';
+    const c = consultores.find(co => co.id === sol.responsables[0]);
+    return c ? `${c.first_name || ''} ${c.last_name || ''}`.trim().toLowerCase() : '';
+  };
+
+  const filteredSolicitudes = solicitudes
+    .filter(sol => {
+      const term = searchTerm.toLowerCase();
+      const areaName = (sol.area_nombre ? `${sol.area_nombre} #${sol.id}` : `Consulta #${sol.id}`).toLowerCase();
+      return areaName.includes(term);
+    })
+    .sort((a, b) => {
+      if (consultorSort === 'none') return 0;
+      const nameA = getConsultorName(a);
+      const nameB = getConsultorName(b);
+      return consultorSort === 'asc'
+        ? nameA.localeCompare(nameB, 'es')
+        : nameB.localeCompare(nameA, 'es');
+    });
 
   if (loading) {
     return (
@@ -290,14 +314,30 @@ export function Solicitudes() {
         <div className="xl:col-span-2 space-y-4">
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-[16px] font-semibold text-gray-900">Visitas Programadas</h2>
-            <div className="relative w-64">
-              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
-              <Input
-                placeholder="Buscar por laboratorio..."
-                className="pl-9 h-9 text-[13px]"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+            <div className="flex items-center gap-2">
+              <Button
+                variant={consultorSort === 'none' ? 'outline' : 'default'}
+                size="sm"
+                onClick={toggleConsultorSort}
+                className={`h-9 text-[13px] gap-1.5 transition-all ${consultorSort === 'none'
+                  ? 'text-gray-600 border-gray-300 hover:bg-gray-50'
+                  : 'bg-[#003087] hover:bg-[#002366] text-white'
+                  }`}
+              >
+                {consultorSort === 'none' && <ArrowUpDown className="w-3.5 h-3.5" />}
+                {consultorSort === 'asc' && <ArrowUpAZ className="w-3.5 h-3.5" />}
+                {consultorSort === 'desc' && <ArrowDownAZ className="w-3.5 h-3.5" />}
+                Consultor
+              </Button>
+              <div className="relative w-64">
+                <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
+                <Input
+                  placeholder="Buscar por laboratorio..."
+                  className="pl-9 h-9 text-[13px]"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
             </div>
           </div>
 
