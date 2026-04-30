@@ -4,6 +4,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command';
+import { DatePicker } from '../ui/date-picker';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -138,12 +139,12 @@ function TableSection({
       <div className="overflow-x-auto rounded-xl border border-gray-100 shadow-sm bg-white">
         <table className="w-full text-[12px] border-collapse">
           <thead>
-            <tr className="text-gray-400 font-bold bg-gray-50/50">
+            <tr className="text-gray-700 font-bold bg-gray-50/50">
               <th className="px-4 py-3 text-left w-14">ID</th>
               <th className="px-4 py-3 text-left min-w-[200px]">Acción Correctiva</th>
               <th className="px-4 py-3 text-left w-48">Responsable(s)</th>
-              <th className="px-4 py-3 text-left w-32">Inicio</th>
-              <th className="px-4 py-3 text-left w-32">Fin</th>
+              <th className="px-4 py-3 text-left w-36">Inicio</th>
+              <th className="px-4 py-3 text-left w-36">Fin</th>
               <th className="px-4 py-3 text-center w-16">Días</th>
               <th className="px-4 py-3 text-left w-36">5S</th>
               <th className="px-4 py-3 text-left w-44">Estado</th>
@@ -161,7 +162,7 @@ function TableSection({
                     value={p.accion_correctiva}
                     disabled={isAdmin}
                     onUpdate={(val) => onUpdate(p.id, { accion_correctiva: val })}
-                    className="h-9 text-[12px] border-transparent hover:border-gray-200 focus:border-[#003087] bg-transparent focus:bg-white transition-all font-medium"
+                    className="h-9 text-[12px] border-transparent hover:border-gray-200 focus:border-[#003087] bg-transparent focus:bg-white transition-all text-gray-700 font-medium"
                   />
                 </td>
 
@@ -180,27 +181,25 @@ function TableSection({
                 </td>
 
                 <td className="px-4 py-3">
-                  <DebouncedInput
-                    type="date"
-                    value={formatDateForInput(p.fecha_inicio)}
+                  <DatePicker
+                    value={p.fecha_inicio}
                     disabled={isAdmin}
-                    onUpdate={(val) => onUpdate(p.id, { fecha_inicio: val })}
-                    className="h-9 text-[11px] border-gray-100 focus:ring-1 focus:ring-[#003087]"
+                    onChange={(val) => onUpdate(p.id, { fecha_inicio: val })}
+                    className="w-full shadow-sm"
                   />
                 </td>
 
                 <td className="px-4 py-3">
-                  <DebouncedInput
-                    type="date"
-                    value={formatDateForInput(p.fecha_fin)}
+                  <DatePicker
+                    value={p.fecha_fin}
                     disabled={isAdmin}
-                    onUpdate={(val) => onUpdate(p.id, { fecha_fin: val })}
-                    className="h-9 text-[11px] border-gray-100 focus:ring-1 focus:ring-[#003087]"
+                    onChange={(val) => onUpdate(p.id, { fecha_fin: val })}
+                    className="w-full shadow-sm"
                   />
                 </td>
 
                 <td className="px-4 py-3 text-center">
-                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-50 font-bold text-gray-700">{p.duracion_dias}</span>
+                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-50 font-bold text-gray-600">{p.duracion_dias}</span>
                 </td>
 
                 <td className="px-4 py-3">
@@ -401,9 +400,13 @@ function ResponsableSelector({ p, onUpdate }: { p: PropuestaMejora, onUpdate: (i
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="h-9 justify-start text-[11px] font-medium w-full border-gray-100 bg-white hover:bg-gray-50 transition-colors">
-          {p.responsables?.length > 0
+          {p.responsables?.length > 1
             ? <Badge className="bg-[#003087] text-white text-[9px] hover:bg-[#003087] h-5 px-1.5">{p.responsables.length} responsables</Badge>
-            : <span className="text-gray-400">Seleccionar...</span>}
+            : p.responsables?.length === 1
+              ? <Badge className="bg-[#003087] text-white text-[9px] hover:bg-[#003087] h-5 px-1.5 truncate max-w-[130px]">
+                {RESPONSABLES_OPTIONS.find(o => o.id === p.responsables[0])?.label}
+              </Badge>
+              : <span className="text-gray-400">Seleccionar...</span>}
           <ChevronsUpDown className="ml-auto h-3 w-3 shrink-0 opacity-40" />
         </Button>
       </PopoverTrigger>

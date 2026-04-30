@@ -16,12 +16,18 @@ export function GanttChart({ propuestas, onUpdate, isAdmin }: GanttChartProps) {
 
   const ganttTasks = useMemo(() => {
     return propuestas.map(p => {
-      const start = p.fecha_inicio ? new Date(p.fecha_inicio) : new Date();
-      const end = p.fecha_fin ? new Date(p.fecha_fin) : new Date(start.getTime() + 86400000);
-      const duration = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
+      // Usamos el mismo parseo seguro que en el DatePicker
+      const parseDateGantt = (dateStr: string | null) => {
+        if (!dateStr) return null;
+        const cleanStr = dateStr.length >= 10 ? `${dateStr.substring(0, 10)}T00:00:00` : dateStr;
+        return new Date(cleanStr);
+      };
 
-      const tColor = p.plazo === 'corto' ? '#003087' : p.plazo === 'mediano' ? '#f59e0b' : '#10b981';
-      const tClass = p.plazo === 'corto' ? 'task-corto' : p.plazo === 'mediano' ? 'task-mediano' : 'task-largo';
+      const start = parseDateGantt(p.fecha_inicio) || new Date();
+      // En Gantt, la fecha final es exclusiva, así que le sumamos un día a la fecha fin para que cubra todo el día.
+      const parsedFin = parseDateGantt(p.fecha_fin);
+      const end = parsedFin ? new Date(parsedFin.getTime() + 86400000) : new Date(start.getTime() + 86400000);
+      const duration = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
 
       return {
         id: p.id.toString(),
@@ -31,10 +37,7 @@ export function GanttChart({ propuestas, onUpdate, isAdmin }: GanttChartProps) {
         duration: duration,
         progress: p.estado === 'completado' ? 100 : p.estado === 'en_proceso' ? 50 : 20,
         type: 'task',
-        open: false,
-        css: tClass,
-        color: tColor,
-        background: tColor
+        open: false
       };
     });
   }, [propuestas]);
@@ -42,8 +45,22 @@ export function GanttChart({ propuestas, onUpdate, isAdmin }: GanttChartProps) {
   const handleGanttChange = (ev: any) => {
     if (isAdmin) return;
     const task = ev.task;
-    const startStr = task.start.toISOString().substring(0, 10);
-    const endStr = task.end.toISOString().substring(0, 10);
+
+    // Función auxiliar para extraer el YYYY-MM-DD en tiempo local (evita desfase por zona horaria)
+    const formatLocal = (d: Date) => {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    // Restamos 1 día a la fecha final porque el Gantt usa fechas finales exclusivas,
+    // pero nuestra base de datos las usa inclusivas.
+    const endLocal = new Date(task.end.getTime() - 86400000);
+
+    const startStr = formatLocal(task.start);
+    const endStr = formatLocal(endLocal);
+
     onUpdate(Number(task.id), {
       fecha_inicio: startStr,
       fecha_fin: endStr
@@ -111,10 +128,15 @@ export function GanttChart({ propuestas, onUpdate, isAdmin }: GanttChartProps) {
       <style>{`
         .wx-gantt {
           font-family: Inter, system-ui, sans-serif !important;
-          height: 59.5em !important; 
+          height: 52em !important; 
           width: 100% !important;
+          flex: 1 !important;
           display: flex !important;
           flex-direction: column !important;
+        }
+        
+        .wx-layout, .wx-content, .wx-chart, .wx-area, .wx-scroll, .wx-table-container {
+          height: 100% !important;
         }
         
         .wx-gantt-chart, .wx-gantt-grid {
@@ -125,31 +147,6 @@ export function GanttChart({ propuestas, onUpdate, isAdmin }: GanttChartProps) {
           border-radius: 4px !important;
           border: none !important;
         }
-
-        /* Colores por Plazo */
-        [class*="task-corto"], .task-corto {
-          --wx-gantt-task-color: #003087 !important;
-          --wx-gantt-task-fill-color: #002060 !important;
-          --wx-gantt-task-border-color: #003087 !important;
-        }
-        [class*="task-mediano"], .task-mediano {
-          --wx-gantt-task-color: #f59e0b !important;
-          --wx-gantt-task-fill-color: #d97706 !important;
-          --wx-gantt-task-border-color: #f59e0b !important;
-        }
-        [class*="task-largo"], .task-largo {
-          --wx-gantt-task-color: #10b981 !important;
-          --wx-gantt-task-fill-color: #059669 !important;
-          --wx-gantt-task-border-color: #10b981 !important;
-        }
-
-        .task-corto.wx-bar, .task-corto .wx-bar, [class*="task-corto"] .wx-bar { background-color: #003087 !important; }
-        .task-mediano.wx-bar, .task-mediano .wx-bar, [class*="task-mediano"] .wx-bar { background-color: #f59e0b !important; }
-        .task-largo.wx-bar, .task-largo .wx-bar, [class*="task-largo"] .wx-bar { background-color: #10b981 !important; }
-        
-        .task-corto .wx-progress-percent { background-color: #002060 !important; }
-        .task-mediano .wx-progress-percent { background-color: #d97706 !important; }
-        .task-largo .wx-progress-percent { background-color: #059669 !important; }
 
         .wx-gantt-task-content {
           font-size: 11px !important;
