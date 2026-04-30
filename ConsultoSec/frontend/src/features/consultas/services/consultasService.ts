@@ -65,6 +65,23 @@ export interface Training {
   fecha_modificacion?: string;
 }
 
+export interface PropuestaMejora {
+  id: number;
+  consulta: number;
+  plazo: 'corto' | 'mediano' | 'largo';
+  numero_tarea: string;
+  accion_correctiva: string;
+  responsables: string[];
+  fecha_inicio: string | null;
+  fecha_fin: string | null;
+  duracion_dias: number;
+  s_implementada: string;
+  estado: string;
+  aprobacion: 'pendiente' | 'aprobado' | 'rechazado';
+  fecha_creacion: string;
+  fecha_actualizacion: string;
+}
+
 const API_URL = "http://localhost:8000/api";
 
 export const consultasService = {
@@ -216,7 +233,6 @@ export const consultasService = {
     const response = await fetch(`${API_URL}/capacitacion-archivos/`, {
       method: "POST",
       headers: {
-        // NO incluir Content-Type — el browser lo setea automáticamente con el boundary
         "Authorization": `Bearer ${token}`
       },
       body: formData,
@@ -233,5 +249,53 @@ export const consultasService = {
       },
     });
     if (!response.ok) throw new Error("Error al eliminar el archivo");
+  },
+
+  async obtenerPropuestas(token: string, consultaId: number): Promise<PropuestaMejora[]> {
+    const response = await fetch(`${API_URL}/propuestas/?consulta=${consultaId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+    });
+    if (!response.ok) throw new Error("Error al obtener las propuestas de mejora");
+    return response.json();
+  },
+
+  async crearPropuesta(token: string, data: Partial<PropuestaMejora>): Promise<PropuestaMejora> {
+    const response = await fetch(`${API_URL}/propuestas/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error("Error al crear la propuesta de mejora");
+    return response.json();
+  },
+
+  async actualizarPropuesta(token: string, id: number, data: Partial<PropuestaMejora>): Promise<PropuestaMejora> {
+    const response = await fetch(`${API_URL}/propuestas/${id}/`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error("Error al actualizar la propuesta de mejora");
+    return response.json();
+  },
+
+  async eliminarPropuesta(token: string, id: number): Promise<void> {
+    const response = await fetch(`${API_URL}/propuestas/${id}/`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      },
+    });
+    if (!response.ok) throw new Error("Error al eliminar la propuesta de mejora");
   }
 };
