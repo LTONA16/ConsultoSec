@@ -20,18 +20,6 @@ class ConsultaViewSet(viewsets.ModelViewSet):
         # Para GET, PUT, PATCH, usa el serializador completo con los items anidados
         return ConsultaSerializer
 
-    def get_queryset(self):
-        user = self.request.user
-        if not user.is_authenticated:
-            return Consulta.objects.none()
-            
-        # Administradores y superusuarios ven todas las auditorías
-        if user.is_superuser or getattr(user, 'role', '') == 'ADMIN':
-            return Consulta.objects.all()
-            
-        # Consultores solo ven las auditorías en las que están asignados como responsables
-        return Consulta.objects.filter(responsables=user).distinct()
-
 class ChecklistItemViewSet(viewsets.ModelViewSet):
     queryset = ChecklistItem.objects.all()
     serializer_class = ChecklistItemSerializer

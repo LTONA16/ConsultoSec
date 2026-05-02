@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Card } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
@@ -30,10 +30,12 @@ export function MisAuditorias() {
   const [capacitaciones, setCapacitaciones] = useState<Training[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Estados de filtro
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filtroLab, setFiltroLab] = useState('Todos');
-  const [filtroEstado, setFiltroEstado] = useState('Todos');
+  // Simulamos las auditorías asignadas al consultor con los estados del flujo estructurado
+  const [auditorias] = useState([
+    { id: 'AUD-2026-004', lab: 'Manufactura Avanzada', fecha: '18 Abr 2026', estado: 'Agendado' },
+    { id: 'AUD-2026-005', lab: 'Eléctrica', fecha: '20 Abr 2026', estado: 'Revisión con Lista de Verificación' },
+    { id: 'AUD-2026-006', lab: 'Mecatrónica Básica', fecha: '10 Abr 2026', estado: 'En Mejoras' },
+  ]);
 
   useEffect(() => {
     if (token) {
@@ -125,16 +127,18 @@ export function MisAuditorias() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="p-8 flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#003087]"></div>
-      </div>
-    );
-  }
+  const handleAccion = (audit: any) => {
+    // Si está agendada o en revisión, lo mandamos al checklist, pasándole el laboratorio por la URL oculta
+    if (audit.estado === 'Agendado' || audit.estado === 'Revisión con Lista de Verificación') {
+      navigate(`/consultor/checklist?id=${audit.id}&lab=${encodeURIComponent(audit.lab)}`);
+    } else {
+      // Para otros estados (como "En Mejoras"), lo podríamos mandar al Gantt
+      alert(`Navegar al seguimiento de ${audit.lab}`);
+    }
+  };
 
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-6 animate-in fade-in duration-500">
+    <div className="p-8 max-w-6xl mx-auto space-y-6">
       <div>
         <h1 className="text-[22px] font-bold text-gray-900">Mis Auditorías Asignadas</h1>
         <p className="text-[14px] text-gray-500 mt-1">Selecciona una auditoría pendiente para comenzar o continuar tu trabajo de campo.</p>
@@ -221,26 +225,26 @@ export function MisAuditorias() {
                     <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-gray-400" /> Creada: {fechaFormat}</span>
                   </div>
                 </div>
+              </div>
 
-                <Button
-                  onClick={() => handleAccion(audit, info.isChecklist)}
-                  className={`gap-2 shadow-sm whitespace-nowrap ${!info.isChecklist
+              <Button
+                onClick={() => handleAccion(audit)}
+                className={`gap-2 shadow-sm ${audit.estado === 'En Mejoras'
                     ? 'bg-white text-[#F59E0B] border border-[#F59E0B] hover:bg-orange-50'
                     : 'bg-[#003087] hover:bg-[#002366] text-white'
-                    }`}
-                >
-                  {!info.isChecklist ? (
-                    <><Wrench className="w-4 h-4" /> Seguimiento / Gantt</>
-                  ) : (
-                    <><ClipboardCheck className="w-4 h-4" /> Iniciar Checklist <ArrowRight className="w-4 h-4" /></>
-                  )}
-                </Button>
+                  }`}
+              >
+                {audit.estado === 'En Mejoras' ? (
+                  <><Wrench className="w-4 h-4" /> Actualizar Gantt</>
+                ) : (
+                  <><ClipboardCheck className="w-4 h-4" /> Iniciar Checklist <ArrowRight className="w-4 h-4" /></>
+                )}
+              </Button>
 
-              </div>
-            </Card>
-          );
-        })}
-      </div>
+            </div>
+          </Card>
+        ))}
     </div>
+    </div >
   );
 }

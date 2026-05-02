@@ -13,12 +13,8 @@ class AreaCatalogo(models.Model):
 
 class RequisitoCatalogo(models.Model):
     area = models.ForeignKey(AreaCatalogo, on_delete=models.CASCADE, related_name='requisitos')
-    categoria = models.CharField(max_length=150, default='General')
     pregunta = models.TextField()
     normativa_aplicable = models.CharField(max_length=255, null=True, blank=True)
-
-    class Meta:
-        ordering = ['id']
 
     def __str__(self):
         return f"{self.area.nombre} - {self.pregunta[:30]}"
@@ -51,7 +47,6 @@ class Consulta(models.Model):
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
     fecha_finalizacion = models.DateTimeField(null=True, blank=True)
-    fecha_finalizacion_propuesta = models.DateTimeField(null=True, blank=True)
 
 
     class Meta:
@@ -95,7 +90,6 @@ class ChecklistItem(models.Model):
     consulta = models.ForeignKey(Consulta, on_delete=models.CASCADE, related_name='items_checklist')
     
     area = models.CharField(max_length=100)
-    categoria = models.CharField(max_length=150, default='General')
     requisito = models.TextField()
     normativa_aplicable = models.CharField(max_length=255, null=True, blank=True)
     
@@ -104,9 +98,6 @@ class ChecklistItem(models.Model):
     mejora = models.TextField(blank=True)
     comentarios = models.TextField(blank=True)
     imagen = models.ImageField(upload_to='consultosec/checklists/%Y/%m/%d/', null=True, blank=True)
-
-    class Meta:
-        ordering = ['id']
 
     def __str__(self):
         return f"Checklist {self.consulta.pk} - {self.area}: {self.requisito[:20]}"
@@ -122,7 +113,6 @@ def generar_checklist(sender, instance, created, **kwargs):
                     items_to_create.append(ChecklistItem(
                         consulta=instance,
                         area=instance.area_laboratorio.nombre,
-                        categoria=req.categoria,
                         requisito=req.pregunta,
                         normativa_aplicable=req.normativa_aplicable
                     ))

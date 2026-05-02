@@ -38,7 +38,7 @@ class UserDetailView(generics.RetrieveUpdateAPIView):
     """
     queryset = User.objects.all()
     serializer_class = UserCreateSerializer
-    permission_classes = [IsAdminOrSelf]
+    permission_classes = [IsAdminRole]
 
 class UserMeView(APIView):
     """
