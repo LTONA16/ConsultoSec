@@ -3,8 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router';
 import { Card } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '../../components/ui/dialog';
-import { ArrowLeft, LayoutGrid, AlertCircle, Send } from 'lucide-react';
+import { ArrowLeft, LayoutGrid, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { consultasService, Consulta, PropuestaMejora } from '../../../features/consultas/services/consultasService';
 import { useAuth } from '../../../features/auth/AuthContext';
@@ -26,8 +25,6 @@ export function Seguimiento() {
   const [propuestas, setPropuestas] = useState<PropuestaMejora[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'tablero' | 'cronograma'>('tablero');
-  const [isSiguienteModalOpen, setIsSiguienteModalOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'Administrador';
 
@@ -132,22 +129,6 @@ export function Seguimiento() {
     }
   };
 
-  const handleSiguienteFase = async () => {
-    if (!token || !consulta) return;
-    setIsSubmitting(true);
-    try {
-      await consultasService.actualizarConsulta(token, consulta.id, { estado: 'ultima_revision' });
-      toast.success('Pasando a última verificación', { position: 'top-right', duration: 3000, style: { marginTop: '6em' } });
-      navigate('/consultor/auditorias');
-    } catch (error) {
-      console.error("Error al cambiar de fase", error);
-      toast.error('Hubo un error al intentar cambiar de fase', { position: 'top-right', duration: 3000, style: { marginTop: '6em' } });
-    } finally {
-      setIsSubmitting(false);
-      setIsSiguienteModalOpen(false);
-    }
-  };
-
   // --- RENDER ---
   if (loading) {
     return (
@@ -194,9 +175,9 @@ export function Seguimiento() {
       </header>
 
       {/* Área de Trabajo */}
-      <main className="flex-1 overflow-hidden flex flex-col relative">
+      <main className="flex-1 overflow-hidden flex flex-col">
         {viewMode === 'tablero' ? (
-          <div className="flex-1 overflow-y-auto p-2 md:p-4 pb-32 md:pb-32">
+          <div className="flex-1 overflow-y-auto p-2 md:p-4">
             <Card className="border-none shadow-sm overflow-hidden bg-white w-full">
               <TaskTable
                 propuestas={propuestas}
@@ -214,45 +195,7 @@ export function Seguimiento() {
             onUpdate={(id, data) => handleUpdate(id, data)}
           />
         )}
-
-        {/* Botones Flotantes */}
-        <div className="fixed bottom-8 right-8 flex flex-col gap-4 w-48 lg:w-56 z-50">
-          <Button
-            onClick={() => setIsSiguienteModalOpen(true)}
-            className="bg-[#003087] hover:bg-[#002366] text-white shadow-xl px-8 py-7 rounded-2xl gap-3 font-bold transition-all active:scale-95"
-          >
-            <Send className="w-5 h-5" />
-            Siguiente Etapa
-          </Button>
-        </div>
       </main>
-
-      <Dialog open={isSiguienteModalOpen} onOpenChange={setIsSiguienteModalOpen}>
-        <DialogContent className="sm:max-w-md bg-white">
-          <DialogHeader>
-            <DialogTitle>Confirmar Siguiente Etapa</DialogTitle>
-            <DialogDescription>
-              ¿Estás seguro de que deseas pasar a la etapa de última verificación?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="mt-4">
-            <Button
-              variant="outline"
-              onClick={() => setIsSiguienteModalOpen(false)}
-              disabled={isSubmitting}
-            >
-              Regresar
-            </Button>
-            <Button
-              className="bg-[#003087] hover:bg-[#002266] text-white"
-              onClick={handleSiguienteFase}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Cargando...' : 'Sí, continuar'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
