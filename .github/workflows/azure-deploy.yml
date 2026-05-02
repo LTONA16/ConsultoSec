@@ -5,6 +5,12 @@ on:
       - main
     paths:
       - 'ConsultoSec/backend/**'
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
+    paths:
+      - 'ConsultoSec/backend/**'
   workflow_dispatch:
 
 env:
