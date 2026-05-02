@@ -8,7 +8,6 @@ class Migration(migrations.Migration):
     dependencies = [
         ('consultas', '0009_capacitacion'),
         ('consultas', '0011_actividad'),
-        ('consultas', '0011_alter_checklistitem_options_and_more'),
     ]
 
     operations = [
