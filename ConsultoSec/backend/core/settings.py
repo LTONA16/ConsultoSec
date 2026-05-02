@@ -74,14 +74,16 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+import os
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'consultosec_local',
-        'USER': 'admin',
-        'PASSWORD': 'adminpassword',
-        'HOST': '127.0.0.1', # Nos conectamos al puerto expuesto por Docker
-        'PORT': '5432',
+        'NAME': os.environ.get('DB_NAME', 'consultosec_local'),
+        'USER': os.environ.get('DB_USER', 'admin'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'adminpassword'),
+        'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
 
