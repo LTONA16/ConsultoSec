@@ -1,70 +1,54 @@
-name: Deploy ConsultoSec a Azure
+name: Deploy Backend a Azure (Contenedor)
 
 on:
   push:
     branches:
       - main
-  # Permite ejecutar el pipeline manualmente desde la web de GitHub
-  workflow_dispatch:
+    paths:
+      - 'backend/**' # Solo ejecutar si hay cambios en el backend
+  workflow_dispatch: # Permite ejecutar el pipeline manualmente
 
-# Variables de entorno globales para no repetir código
 env:
   BACKEND_DIR: 'backend'
-  FRONTEND_DIR: 'frontend'
-  IMAGE_NAME: 'consultosec-api'
+  # GHCR es gratuito y está integrado en GitHub. No necesitas pagar Azure Container Registry.
+  # github.repository se convierte automáticamente en tu-usuario/tu-repo
+  IMAGE_NAME: 'ghcr.io/${{ github.repository }}/consultosec-api'
 
 jobs:
-  # ==========================================
-  # TRABAJO 1: BACKEND (Django + Docker)
-  # ==========================================
-  deploy-backend:
-    name: Build & Deploy Backend
+  build-and-deploy:
+    name: Build & Deploy Docker Image
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+
     steps:
       - name: Checkout del código
         uses: actions/checkout@v4
 
-      - name: Login en Azure
-        uses: azure/login@v1
+      - name: Login en GitHub Container Registry (GHCR)
+        uses: docker/login-action@v2
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Login en Azure Container Registry (ACR)
-        uses: azure/docker-login@v1
-        with:
-          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
-          username: ${{ secrets.ACR_USERNAME }}
-          password: ${{ secrets.ACR_PASSWORD }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          # GITHUB_TOKEN es automático, no tienes que crear este secreto
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Construir y subir imagen Docker
         run: |
+          # Convertimos el nombre de la imagen a minúsculas (Docker lo requiere)
+          IMAGE_LOWER=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
+          
           cd ${{ env.BACKEND_DIR }}
-          # Usamos el SHA del commit como etiqueta de la imagen para trazabilidad
-          docker build . -t ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          # Etiquetamos como latest y con el SHA del commit
+          docker build . -t $IMAGE_LOWER:latest -t $IMAGE_LOWER:${{ github.sha }}
+          docker push $IMAGE_LOWER --all-tags
 
-      - name: Desplegar en Azure App Service
+      - name: Desplegar en Azure Web App for Containers
         uses: azure/webapps-deploy@v2
         with:
-          app-name: ${{ secrets.APP_SERVICE_NAME }}
-          images: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-
-  # ==========================================
-  # TRABAJO 2: FRONTEND (React + Vite)
-  # ==========================================
-  deploy-frontend:
-    name: Build & Deploy Frontend
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout del código
-        uses: actions/checkout@v4
-
-      - name: Desplegar en Azure Static Web Apps
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.SWA_DEPLOYMENT_TOKEN }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }} # Este token lo provee GitHub automáticamente
-          action: "upload"
-          app_location: "/frontend" # Dónde está tu package.json
-          api_location: "" # Se deja vacío porque el backend va separado
-          output_location: "dist" # La carpeta que genera Vite al compilar
+          # AQUI DEBES PONER EL NOMBRE EXACTO DE TU APP SERVICE:
+          app-name: 'consultosec' 
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          # Usamos bash para minúsculas de nuevo por si acaso
+          images: ${{ env.IMAGE_NAME }}:${{ github.sha }}

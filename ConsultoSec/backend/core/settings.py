@@ -1,19 +1,24 @@
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file
+load_dotenv(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-&=xnoi@*(4fcz_%%xjy6rb1)n7c^!w81*q47u7%)nk4us0jdcg'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-&=xnoi@*(4fcz_%%xjy6rb1)n7c^!w81*q47u7%)nk4us0jdcg')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else []
 
 
 # Application definition
@@ -73,11 +78,11 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'consultosec_local',
-        'USER': 'admin',
-        'PASSWORD': 'adminpassword',
-        'HOST': '127.0.0.1', # Nos conectamos al puerto expuesto por Docker
-        'PORT': '5432',
+        'NAME': os.getenv('DB_NAME', 'consultosec_local'),
+        'USER': os.getenv('DB_USER', 'admin'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'adminpassword'),
+        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
+        'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
 
