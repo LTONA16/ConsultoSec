@@ -1,0 +1,54 @@
+name: Deploy Backend a Azure (Contenedor)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**' # Solo ejecutar si hay cambios en el backend
+  workflow_dispatch: # Permite ejecutar el pipeline manualmente
+
+env:
+  BACKEND_DIR: 'backend'
+  # GHCR es gratuito y está integrado en GitHub. No necesitas pagar Azure Container Registry.
+  # github.repository se convierte automáticamente en tu-usuario/tu-repo
+  IMAGE_NAME: 'ghcr.io/${{ github.repository }}/consultosec-api'
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Login en GitHub Container Registry (GHCR)
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          # GITHUB_TOKEN es automático, no tienes que crear este secreto
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Construir y subir imagen Docker
+        run: |
+          # Convertimos el nombre de la imagen a minúsculas (Docker lo requiere)
+          IMAGE_LOWER=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
+          
+          cd ${{ env.BACKEND_DIR }}
+          # Etiquetamos como latest y con el SHA del commit
+          docker build . -t $IMAGE_LOWER:latest -t $IMAGE_LOWER:${{ github.sha }}
+          docker push $IMAGE_LOWER --all-tags
+
+      - name: Desplegar en Azure Web App for Containers
+        uses: azure/webapps-deploy@v2
+        with:
+          # AQUI DEBES PONER EL NOMBRE EXACTO DE TU APP SERVICE:
+          app-name: 'consultosec' 
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          # Usamos bash para minúsculas de nuevo por si acaso
+          images: ${{ env.IMAGE_NAME }}:${{ github.sha }}

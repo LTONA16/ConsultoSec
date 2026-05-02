@@ -1,9 +1,7 @@
-import os
-import json
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
 class AreaCatalogo(models.Model):
@@ -15,8 +13,12 @@ class AreaCatalogo(models.Model):
 
 class RequisitoCatalogo(models.Model):
     area = models.ForeignKey(AreaCatalogo, on_delete=models.CASCADE, related_name='requisitos')
+    categoria = models.CharField(max_length=150, default='General')
     pregunta = models.TextField()
     normativa_aplicable = models.CharField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        ordering = ['id']
 
     def __str__(self):
         return f"{self.area.nombre} - {self.pregunta[:30]}"
@@ -49,6 +51,8 @@ class Consulta(models.Model):
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
     fecha_finalizacion = models.DateTimeField(null=True, blank=True)
+    fecha_finalizacion_propuesta = models.DateTimeField(null=True, blank=True)
+
 
     class Meta:
         verbose_name = "Consulta"
@@ -66,7 +70,6 @@ class Consulta(models.Model):
             
         super().save(*args, **kwargs)
 
-
 class Evidencia(models.Model):
     consulta = models.ForeignKey(
         Consulta, 
@@ -81,7 +84,6 @@ class Evidencia(models.Model):
         # Actualizado para que apunte al ID de la consulta en lugar del título borrado
         return f"Evidencia de Consulta #{self.consulta.pk}"
 
-
 class ChecklistItem(models.Model):
     CUMPLE_CHOICES = [
         ('si', 'Sí'),
@@ -93,6 +95,7 @@ class ChecklistItem(models.Model):
     consulta = models.ForeignKey(Consulta, on_delete=models.CASCADE, related_name='items_checklist')
     
     area = models.CharField(max_length=100)
+    categoria = models.CharField(max_length=150, default='General')
     requisito = models.TextField()
     normativa_aplicable = models.CharField(max_length=255, null=True, blank=True)
     
@@ -101,6 +104,9 @@ class ChecklistItem(models.Model):
     mejora = models.TextField(blank=True)
     comentarios = models.TextField(blank=True)
     imagen = models.ImageField(upload_to='consultosec/checklists/%Y/%m/%d/', null=True, blank=True)
+
+    class Meta:
+        ordering = ['id']
 
     def __str__(self):
         return f"Checklist {self.consulta.pk} - {self.area}: {self.requisito[:20]}"
@@ -116,9 +122,119 @@ def generar_checklist(sender, instance, created, **kwargs):
                     items_to_create.append(ChecklistItem(
                         consulta=instance,
                         area=instance.area_laboratorio.nombre,
+                        categoria=req.categoria,
                         requisito=req.pregunta,
                         normativa_aplicable=req.normativa_aplicable
                     ))
                 ChecklistItem.objects.bulk_create(items_to_create)
         except Exception as e:
             print(f"Error generando checklist desde catálogo: {e}")
+
+class PropuestaMejora(models.Model):
+    PLAZO_CHOICES = [
+        ('corto', 'Corto Plazo'),
+        ('mediano', 'Mediano Plazo'),
+        ('largo', 'Largo Plazo'),
+    ]
+    ESTADO_CHOICES = [
+        ('completado', 'Completado'),
+        ('en_proceso', 'En proceso'),
+        ('requiere_adquisicion', 'Requiere adquisición de insumos o presupuesto por parte del departamento'),
+        ('requiere_instalacion', 'Requiere instalación por parte de mantenimiento'),
+    ]
+    S_CHOICES = [
+        ('clasificar', 'Clasificar'),
+        ('ordenar', 'Ordenar'),
+        ('limpiar', 'Limpiar'),
+        ('estandarizar', 'Estandarizar'),
+        ('disciplina', 'Disciplina'),
+    ]
+    APROBACION_CHOICES = [
+        ('pendiente', 'Pendiente'),
+        ('aprobado', 'Aprobado'),
+        ('rechazado', 'Rechazado'),
+    ]
+
+    consulta = models.ForeignKey(
+        Consulta, 
+        on_delete=models.CASCADE, 
+        related_name='propuestas_mejora'
+    )
+    plazo = models.CharField(max_length=10, choices=PLAZO_CHOICES, default='corto')
+    numero_tarea = models.CharField(max_length=10, default='', help_text="Ej: 1.1, 2.3")
+    accion_correctiva = models.TextField(default='', help_text="Descripción de la acción correctiva")
+    responsables = models.JSONField(default=list, help_text="Lista de responsables seleccionados")
+    fecha_inicio = models.DateField(null=True, blank=True)
+    fecha_fin = models.DateField(null=True, blank=True)
+    s_implementada = models.CharField(max_length=20, choices=S_CHOICES, blank=True)
+    estado = models.CharField(
+        max_length=30, 
+        choices=ESTADO_CHOICES, 
+        default='en_proceso'
+    )
+    aprobacion = models.CharField(
+        max_length=15, 
+        choices=APROBACION_CHOICES, 
+        default='pendiente'
+    )
+    
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['plazo', 'numero_tarea']
+
+    @property
+    def duracion_dias(self):
+        if self.fecha_inicio and self.fecha_fin:
+            return (self.fecha_fin - self.fecha_inicio).days
+        return 0
+
+    def __str__(self):
+        return f"Propuesta #{self.pk} - {self.get_plazo_display()} ({self.numero_tarea})"
+
+class Capacitacion(models.Model):
+    consultas = models.ManyToManyField(Consulta, related_name='capacitaciones', blank=True)
+    laboratorios = models.ManyToManyField(AreaCatalogo, related_name='capacitaciones_asignadas', blank=True)
+    tema = models.CharField(max_length=255)
+    descripcion = models.TextField(blank=True)
+    fecha = models.DateField()
+    responsable = models.CharField(max_length=255)
+    asistentes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='capacitaciones_asistidas', blank=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_modificacion = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Capacitación: {self.tema} - {self.fecha}"
+
+
+class CapacitacionArchivo(models.Model):
+    TIPO_CHOICES = [
+        ('material', 'Material'),
+        ('evidencia', 'Evidencia'),
+    ]
+    capacitacion = models.ForeignKey(
+        Capacitacion,
+        on_delete=models.CASCADE,
+        related_name='archivos'
+    )
+    archivo = models.FileField(upload_to='consultosec/capacitaciones/%Y/%m/%d/')
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default='material')
+    nombre = models.CharField(max_length=255, blank=True)
+    fecha_subida = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.get_tipo_display()} - {self.nombre or self.archivo.name}"
+
+
+@receiver(post_delete, sender=CapacitacionArchivo)
+def eliminar_archivo_disco(sender, instance, **kwargs):
+    """Borra el archivo físico del disco cuando se elimina el registro."""
+    if instance.archivo and instance.archivo.name:
+        import os
+        try:
+            if os.path.isfile(instance.archivo.path):
+                os.remove(instance.archivo.path)
+        except Exception as e:
+            print(f"No se pudo eliminar el archivo del disco: {e}")
+

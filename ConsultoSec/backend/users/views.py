@@ -4,7 +4,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 from .serializers import UserCreateSerializer
-from .permissions import IsAdminRole
+from .permissions import IsAdminRole, IsAdminOrSelf
+from .serializers import ConsultorSerializer
 
 User = get_user_model()
 
@@ -17,6 +18,19 @@ class UserListCreateView(generics.ListCreateAPIView):
     serializer_class = UserCreateSerializer
     permission_classes = [IsAdminRole]
 
+class ConsultoresListView(generics.ListAPIView):
+    """
+    Endpoint público (cualquier usuario autenticado) que devuelve
+    únicamente los usuarios con rol CONSULTOR y activos.
+    Usado para poblar selectores de asistentes en Capacitaciones.
+    """
+    serializer_class = ConsultorSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        User = get_user_model()
+        return User.objects.filter(role='CONSULTOR', is_active=True).order_by('first_name', 'last_name')
+
 class UserDetailView(generics.RetrieveUpdateAPIView):
     """
     Endpoint para obtener, actualizar o desactivar (modificar) un usuario específico por su ID.
@@ -24,7 +38,7 @@ class UserDetailView(generics.RetrieveUpdateAPIView):
     """
     queryset = User.objects.all()
     serializer_class = UserCreateSerializer
-    permission_classes = [IsAdminRole]
+    permission_classes = [IsAdminOrSelf]
 
 class UserMeView(APIView):
     """

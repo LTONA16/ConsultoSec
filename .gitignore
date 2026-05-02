@@ -4,7 +4,7 @@
 # Ignorar el entorno virtual (muy importante)
 ConsultoSec/backend/venv/
 env/
-
+venv/
 # Caché y archivos compilados de Python
 __pycache__/
 *.py[cod]
@@ -23,6 +23,9 @@ db.sqlite3
 # =========================
 # Dependencias pesadas
 ConsultoSec/frontend/node_modules/
+node_modules
+package-lock.json
+package.json
 
 # Directorios de construcción (Vite genera 'dist' por defecto)
 ConsultoSec/frontend/dist/

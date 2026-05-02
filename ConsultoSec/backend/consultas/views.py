@@ -1,6 +1,6 @@
 from rest_framework import viewsets
-from .models import Consulta, ChecklistItem, AreaCatalogo, RequisitoCatalogo
-from .serializers import ConsultaSerializer, ChecklistItemSerializer, AreaCatalogoSerializer, RequisitoCatalogoSerializer
+from .models import Consulta, ChecklistItem, AreaCatalogo, PropuestaMejora, RequisitoCatalogo, Capacitacion, CapacitacionArchivo
+from .serializers import ConsultaSerializer, ChecklistItemSerializer, AreaCatalogoSerializer, RequisitoCatalogoSerializer, SolicitudCreateSerializer, PropuestaMejoraSerializer, CapacitacionSerializer, CapacitacionArchivoSerializer
 
 class AreaCatalogoViewSet(viewsets.ModelViewSet):
     queryset = AreaCatalogo.objects.all()
@@ -12,8 +12,56 @@ class RequisitoCatalogoViewSet(viewsets.ModelViewSet):
 
 class ConsultaViewSet(viewsets.ModelViewSet):
     queryset = Consulta.objects.all()
-    serializer_class = ConsultaSerializer
+    
+    def get_serializer_class(self):
+        # Si la petición es POST, usa el serializador con los campos definidos
+        if self.action == 'create':
+            return SolicitudCreateSerializer
+        # Para GET, PUT, PATCH, usa el serializador completo con los items anidados
+        return ConsultaSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return Consulta.objects.none()
+            
+        # Administradores y superusuarios ven todas las auditorías
+        if user.is_superuser or getattr(user, 'role', '') == 'ADMIN':
+            return Consulta.objects.all()
+            
+        # Consultores solo ven las auditorías en las que están asignados como responsables
+        return Consulta.objects.filter(responsables=user).distinct()
 
 class ChecklistItemViewSet(viewsets.ModelViewSet):
     queryset = ChecklistItem.objects.all()
     serializer_class = ChecklistItemSerializer
+
+class PropuestaMejoraViewSet(viewsets.ModelViewSet):
+    queryset = PropuestaMejora.objects.all()
+    serializer_class = PropuestaMejoraSerializer
+
+    def get_queryset(self):
+        """
+        Permite filtrar las propuestas usando query params.
+        Ejemplo: /api/propuestas/?consulta=5
+                 /api/propuestas/?plazo=corto
+        """
+        queryset = super().get_queryset()
+        consulta_param = self.request.query_params.get('consulta', None)
+        plazo_param = self.request.query_params.get('plazo', None)
+        
+        if consulta_param:
+            queryset = queryset.filter(consulta_id=consulta_param)
+        if plazo_param:
+            queryset = queryset.filter(plazo=plazo_param)
+                
+        return queryset
+
+class CapacitacionViewSet(viewsets.ModelViewSet):
+    queryset = Capacitacion.objects.all()
+    serializer_class = CapacitacionSerializer
+
+class CapacitacionArchivoViewSet(viewsets.ModelViewSet):
+    queryset = CapacitacionArchivo.objects.all()
+    serializer_class = CapacitacionArchivoSerializer
+

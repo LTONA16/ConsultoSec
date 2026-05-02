@@ -28,6 +28,8 @@ export default defineConfig({
     alias: {
       // Alias @ to the src directory
       '@': path.resolve(__dirname, './src'),
+      // frappe-gantt CSS can't be imported via package exports, so alias the CSS directly
+      'frappe-gantt/style.css': path.resolve(__dirname, 'node_modules/frappe-gantt/dist/frappe-gantt.css'),
     },
   },
 

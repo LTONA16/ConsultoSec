@@ -8,7 +8,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'password', 'role', 'first_name', 'last_name', 'is_active')
+        fields = ('id', 'username', 'email', 'password', 'role', 'first_name', 'last_name', 'is_active', 'date_joined')
 
     def create(self, validated_data):
         user = User.objects.create_user(
@@ -26,3 +26,9 @@ class UserCreateSerializer(serializers.ModelSerializer):
             password = validated_data.pop('password')
             instance.set_password(password)
         return super().update(instance, validated_data)
+
+class ConsultorSerializer(serializers.ModelSerializer):
+    """Serializer de solo lectura con campos mínimos para el selector de asistentes."""
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'first_name', 'last_name', 'role', 'is_active')
