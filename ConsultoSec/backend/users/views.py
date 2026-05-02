@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 from .serializers import UserCreateSerializer
-from .permissions import IsAdminRole
+from .permissions import IsAdminRole, IsAdminOrSelf
 from .serializers import ConsultorSerializer
 
 User = get_user_model()
@@ -38,7 +38,7 @@ class UserDetailView(generics.RetrieveUpdateAPIView):
     """
     queryset = User.objects.all()
     serializer_class = UserCreateSerializer
-    permission_classes = [IsAdminRole]
+    permission_classes = [IsAdminOrSelf]
 
 class UserMeView(APIView):
     """

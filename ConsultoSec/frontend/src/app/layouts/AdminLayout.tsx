@@ -23,9 +23,9 @@ export function AdminLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] flex">
+    <div className="h-screen bg-[#F5F5F5] flex overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-[#E8E8E8] flex flex-col">
+      <aside className="w-64 bg-white border-r border-[#E8E8E8] flex flex-col h-full">
         <div className="p-6 border-b border-[#E8E8E8] flex items-center gap-3">
           {/* Contenedor circular blanco para el logo */}
           <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm overflow-hidden border border-[#E8E8E8] shrink-0">
@@ -55,8 +55,8 @@ export function AdminLayout() {
                 key={item.path}
                 to={item.path}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg text-[14px] transition-colors ${active
-                    ? 'bg-[#003087] text-white'
-                    : 'text-gray-700 hover:bg-[#F5F5F5]'
+                  ? 'bg-[#003087] text-white'
+                  : 'text-gray-700 hover:bg-[#F5F5F5]'
                   }`}
               >
                 <Icon className="w-5 h-5" />
@@ -82,7 +82,7 @@ export function AdminLayout() {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col">
-       {/* Top bar */}
+        {/* Top bar */}
         <header className="bg-white border-b border-[#E8E8E8] px-8 py-3">
           <div className="flex items-center justify-end">
             {/* Perfil interactivo */}

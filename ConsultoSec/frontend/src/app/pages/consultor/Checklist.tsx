@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router';
-import { Consulta, consultasService } from '../../../features/consultas/services/consultasService';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '../../components/ui/dialog';
 import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Textarea } from '../../components/ui/textarea';
@@ -25,27 +25,14 @@ import {
   HelpCircle,
   Send
 } from 'lucide-react';
-
-const SECCIONES_FIJAS = [
-  { id: 'gen_1', categoria: 'Operaciones Generales', pregunta: '¿El personal cuenta con el Equipo de Protección Personal (EPP) completo y en buen estado?' },
-  { id: 'gen_2', categoria: 'Operaciones Generales', pregunta: '¿Las rutas de evacuación y salidas de emergencia están libres de obstáculos y señalizadas?' },
-  { id: 'gen_3', categoria: 'Operaciones Generales', pregunta: '¿El área de trabajo se encuentra limpia, ordenada y libre de derrames o residuos?' }
-];
-
-const SECCIONES_ESPECIFICAS = {
-  'Manufactura Avanzada': [
-    { id: 'esp_1', categoria: 'Maquinaria', pregunta: '¿Las guardas de seguridad de las máquinas CNC están operativas?' },
-    { id: 'esp_2', categoria: 'Maquinaria', pregunta: '¿Se cuenta con el registro de mantenimiento preventivo de los tornos?' }
-  ],
-  'Eléctrica': [
-    { id: 'esp_3', categoria: 'Instalaciones', pregunta: '¿Los tableros eléctricos cuentan con leyenda de peligro y están bloqueados?' },
-    { id: 'esp_4', categoria: 'Instalaciones', pregunta: '¿Se han realizado pruebas de continuidad en las puestas a tierra?' }
-  ]
-};
+import { toast } from 'sonner';
+import { consultasService, Consulta, ChecklistItem } from '../../../features/consultas/services/consultasService';
+import { useAuth } from '../../../features/auth/AuthContext';
 
 export function Checklist() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { token } = useAuth();
 
   const labFromUrl = searchParams.get('lab');
   const idFromUrl = searchParams.get('id');
@@ -58,55 +45,137 @@ export function Checklist() {
   const [nuevaCatNombre, setNuevaCatNombre] = useState('');
   const [preguntasDinamicas, setPreguntasDinamicas] = useState<any[]>([]);
   const [ultimoIdAgregado, setUltimoIdAgregado] = useState('');
-  const [notas, setNotas] = useState<Record<string, string>>({});
-  const debounceTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const debounceTimers = useRef<Record<string, NodeJS.Timeout>>({});
 
   useEffect(() => {
-    // Basic mock load since the original fetch logic seems missing
-    if (idFromUrl) {
-      setLoading(true);
-      // Simulate fetch
-      setTimeout(() => {
-        setConsulta({
-          id: Number(idFromUrl),
-          notas: '',
-          area_laboratorio: null,
-          area_nombre: labFromUrl,
-          estado: 'revision_verificacion',
-          fecha_creacion: new Date().toISOString(),
-          fecha_actualizacion: new Date().toISOString(),
-          fecha_finalizacion: null,
-          fecha_finalizacion_propuesta: null,
-          items_checklist: [],
-          responsables: []
+    if (token && idFromUrl) {
+      consultasService.obtenerConsulta(token, parseInt(idFromUrl))
+        .then(data => {
+          setConsulta(data);
+          setLoading(false);
+          // If status is agendada or revision_previa, mark it internally as revision_verificacion indicating we started the checklist
+          if (data.estado === 'agendada' || data.estado === 'revision_previa') {
+            consultasService.actualizarConsulta(token, data.id, { estado: 'revision_verificacion' });
+          }
+        })
+        .catch(err => {
+          console.error("Error al cargar la consulta:", err);
+          setLoading(false);
         });
-        setLoading(false);
-      }, 500);
+    } else {
+      setLoading(false);
     }
-  }, [idFromUrl, labFromUrl]);
+  }, [token, idFromUrl]);
 
-  if (!labFromUrl || !idFromUrl) {
+  const handleRespuesta = (item: ChecklistItem, valor: 'si' | 'no' | 'parcial' | 'no_evaluado') => {
+    if (!consulta || !token) return;
+
+    // Optimistic update
+    const updatedItems = consulta.items_checklist.map(i =>
+      i.id === item.id ? { ...i, cumple: valor } : i
+    );
+    setConsulta({ ...consulta, items_checklist: updatedItems });
+
+    // API update
+    consultasService.actualizarChecklistItem(token, item.id, { cumple: valor })
+      .then(() => {
+        toast('Actualizado ✓', {
+          position: 'top-right',
+          duration: 1500,
+          style: { fontSize: '12px', padding: '6px 12px', minHeight: 'auto', background: '#F9FAFB', border: '1px solid #E5E7EB', color: '#4B5563', borderRadius: '8px', width: 'auto', marginLeft: 'auto', marginTop: '6em' }
+        });
+      })
+      .catch(err => console.error("Error updating item", err));
+  };
+
+  const handleNota = (item: ChecklistItem, observacion: string) => {
+    if (!consulta || !token) return;
+
+    // Optimistic update
+    const updatedItems = consulta.items_checklist.map(i =>
+      i.id === item.id ? { ...i, observacion } : i
+    );
+    setConsulta({ ...consulta, items_checklist: updatedItems });
+
+    // Debounce API update para notas
+    if (debounceTimers.current[item.id]) {
+      clearTimeout(debounceTimers.current[item.id]);
+    }
+
+    debounceTimers.current[item.id] = setTimeout(() => {
+      consultasService.actualizarChecklistItem(token, item.id, { observacion })
+        .then(() => {
+          toast('Nota insertada ✓', {
+            position: 'top-right',
+            duration: 1500,
+            style: { fontSize: '12px', padding: '6px 12px', minHeight: 'auto', background: '#F9FAFB', border: '1px solid #E5E7EB', color: '#4B5563', borderRadius: '8px', width: 'auto', marginLeft: 'auto', marginTop: '6em' }
+          });
+        })
+        .catch(err => console.error("Error updating nota", err));
+    }, 1000);
+  };
+
+  const handleFinalizar = async () => {
+    if (!token || !consulta) return;
+    setIsFinishing(true);
+    try {
+      await consultasService.actualizarConsulta(token, consulta.id, { estado: 'mejoras_solicitadas' });
+      toast.success('Auditoría finalizada con éxito', { position: 'top-right', duration: 3000, style: { marginTop: '6em' } });
+      navigate('/consultor/auditorias');
+    } catch (error) {
+      console.error("Error al finalizar la auditoría", error);
+      toast.error('Hubo un error al intentar finalizar la auditoría', { position: 'top-right', duration: 3000, style: { marginTop: '6em' } });
+    } finally {
+      setIsFinishing(false);
+      setIsFinalizarModalOpen(false);
+    }
+  };
+
+  const handleGuardarProgreso = async () => {
+    if (!token || !consulta) return;
+    setIsSavingInProgress(true);
+
+    try {
+      // Force sync all checklist items before navigating away to avoid aborted requests
+      await Promise.all(
+        consulta.items_checklist.map(item =>
+          consultasService.actualizarChecklistItem(token, item.id, {
+            cumple: item.cumple,
+            observacion: item.observacion
+          })
+        )
+      );
+      toast.success('Progreso de la auditoría guardado', { position: 'top-right', duration: 3000, style: { marginTop: '6em' } });
+      navigate('/consultor/auditorias');
+    } catch (error) {
+      console.error("Error al guardar el progreso", error);
+      toast.error('Error al guardar el progreso', { position: 'top-right', duration: 3000, style: { marginTop: '6em' } });
+    } finally {
+      setIsSavingInProgress(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="p-8 flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#003087]"></div>
+      </div>
+    );
+  }
+
+  if (!labFromUrl || !idFromUrl || !consulta) {
     return (
       <div className="p-8 max-w-3xl mx-auto mt-20 text-center">
         <Card className="p-12 border-dashed border-2 border-gray-300 bg-white">
           <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-[20px] font-bold text-gray-900">Acceso Restringido</h2>
+          <h2 className="text-[20px] font-bold text-gray-900">Acceso Restringido o No Encontrado</h2>
           <p className="text-[15px] text-gray-500 mt-2 mb-8">
-            Debes seleccionar una auditoría asignada desde tu panel para cargar el checklist.
+            Debes seleccionar una auditoría válida y asignada desde tu panel para cargar el checklist.
           </p>
           <Button onClick={() => navigate('/consultor/auditorias')} className="bg-[#003087] text-white">
             <ArrowLeft className="w-4 h-4 mr-2" /> Volver a Mis Auditorías
           </Button>
         </Card>
-      </div>
-    );
-  }
-
-  if (loading || !consulta) {
-    return (
-      <div className="p-8 max-w-3xl mx-auto mt-20 text-center">
-        <div className="w-10 h-10 border-4 border-gray-200 border-t-[#003087] rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-gray-500 font-medium">Cargando checklist...</p>
       </div>
     );
   }
@@ -129,39 +198,13 @@ export function Checklist() {
 
   // NUEVA FUNCIÓN: Permite cambiar el nombre de una sección completa
   const updateNombreSeccion = (viejoNombre: string, nuevoNombre: string) => {
-    setPreguntasDinamicas(prev => prev.map(q =>
+    setPreguntasDinamicas(prev => prev.map(q => 
       q.categoria === viejoNombre ? { ...q, categoria: nuevoNombre } : q
     ));
   };
 
   const eliminarPregunta = (id: string) => {
     setPreguntasDinamicas(prev => prev.filter(q => q.id !== id));
-  };
-
-  const handleNota = (id: string, valor: string) => {
-    setNotas(prev => ({ ...prev, [id]: valor }));
-  };
-
-  const handleRespuesta = (q: any, valor: string) => {
-    setConsulta(prev => prev ? {
-      ...prev,
-      items_checklist: prev.items_checklist.map((item) =>
-        item.id === q.id ? { ...item, cumple: valor as any } : item
-      )
-    } : prev);
-  };
-
-  const handleGuardarProgreso = async () => {
-    setIsSavingInProgress(true);
-    try {
-      // simulated save
-      await new Promise(resolve => setTimeout(resolve, 800));
-      // You can implement actual API calls here using consultasService
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsSavingInProgress(false);
-    }
   };
   // Agrupación por categoría
   const secciones = consulta.items_checklist.reduce((acc: any[], curr) => {
@@ -186,7 +229,7 @@ export function Checklist() {
   }, []);
 
   return (
-    <div className="p-8 max-w-5xl mx-auto space-y-8">
+    <div className="p-8 max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500">
       {/* Header informativo renovado */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-xl border border-[#E8E8E8] shadow-sm">
         <div>
@@ -197,38 +240,28 @@ export function Checklist() {
             <h1 className="text-[22px] font-bold text-gray-900">Checklist de Auditoría</h1>
           </div>
           <p className="text-[14px] text-gray-500 mt-2">
-            Laboratorio: <strong className="text-gray-900">{labFromUrl}</strong>
+            Laboratorio: <strong className="text-gray-900">{consulta.area_nombre || labFromUrl}</strong>
             <span className="mx-3 text-gray-300">|</span>
             Folio: <strong className="text-[#003087]">{idFromUrl}</strong>
           </p>
         </div>
-
-        {/* Botón de guardar progreso */}
-        <Button
-          variant="outline"
-          onClick={() => navigate('/consultor/auditorias')}
-          className="text-gray-600 border-[#E8E8E8] hover:text-[#003087] hover:bg-blue-50 gap-2 transition-colors"
-        >
-          <PauseCircle className="w-4 h-4" />
-          Guardar progreso
-        </Button>
       </div>
 
       <div className="space-y-10 pb-24">
-        {[...SECCIONES_FIJAS, ...(SECCIONES_ESPECIFICAS[labFromUrl as keyof typeof SECCIONES_ESPECIFICAS] || [])]
-          .reduce((acc: any[], curr) => {
-            const last = acc[acc.length - 1];
-            if (last && last.categoria === curr.categoria) last.preguntas.push(curr);
-            else acc.push({ categoria: curr.categoria, preguntas: [curr] });
-            return acc;
-          }, []).map((seccion, idx) => (
+        {secciones.length === 0 ? (
+          <div className="p-8 text-center text-gray-500 border border-dashed rounded-lg bg-white">
+            No hay requisitos configurados para este checklist.
+            Comunícate con el administrador.
+          </div>
+        ) : (
+          secciones.map((seccion, idx) => (
             <div key={idx} className="space-y-4">
               <h2 className="text-[16px] font-bold text-[#003087] border-b border-[#E8E8E8] pb-2 uppercase tracking-wide">
-                {seccion.categoria}
+                {seccion.categoria || 'General'}
               </h2>
 
               <div className="grid gap-6">
-                {seccion.preguntas.map((q: any) => (
+                {seccion.preguntas.map((q: ChecklistItem) => (
                   <Card key={q.id} className="p-6 border border-[#E8E8E8] bg-white">
                     <div className="space-y-6">
                       {/* Pregunta y Botones */}
@@ -294,16 +327,17 @@ export function Checklist() {
                           placeholder="Escribe aquí los detalles del hallazgo..."
                           className="bg-white border-[#E8E8E8] text-[13px] resize-none"
                           rows={2}
-                          value={notas[q.id] || ''}
-                          onChange={(e) => handleNota(q.id, e.target.value)}
+                          value={q.observacion || ''}
+                          onChange={(e) => handleNota(q, e.target.value)}
                         />
                       </div>
                     </div>
                   </Card>
                 ))}
-              </div>
             </div>
-          ))}
+          </div>
+          ))
+        )}
 
         {/* Panel Inferior */}
         <div className="pt-6">
@@ -313,7 +347,7 @@ export function Checklist() {
               <p className="text-gray-400 text-[12px]">Crea una nueva sección personalizada</p>
             </div>
             <div className="flex w-full max-w-lg gap-3 bg-white p-2 rounded-xl border border-gray-200">
-              <Input
+              <Input 
                 placeholder="Nombre de sección..."
                 value={nuevaCatNombre}
                 onChange={(e) => setNuevaCatNombre(e.target.value)}
@@ -348,8 +382,36 @@ export function Checklist() {
             <Send className="w-5 h-5" />
             Finalizar Auditoría
           </Button>
-        </div>
+        </div>  
       </div>
+
+      <Dialog open={isFinalizarModalOpen} onOpenChange={setIsFinalizarModalOpen}>
+        <DialogContent className="sm:max-w-md bg-white">
+          <DialogHeader>
+            <DialogTitle>Confirmar Finalización</DialogTitle>
+            <DialogDescription>
+              ¿Estás seguro de que deseas dar por concluida esta auditoría?
+              Se notificará al sistema y el checklist pasará a la etapa de resolución de mejoras.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsFinalizarModalOpen(false)}
+              disabled={isFinishing}
+            >
+              Regresar
+            </Button>
+            <Button
+              className="bg-[#003087] hover:bg-[#002266] text-white"
+              onClick={handleFinalizar}
+              disabled={isFinishing}
+            >
+              {isFinishing ? 'Cargando...' : 'Sí, finalizar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

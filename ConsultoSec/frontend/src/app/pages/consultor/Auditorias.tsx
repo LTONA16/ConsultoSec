@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { Card } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
@@ -30,6 +30,7 @@ export function MisAuditorias() {
   const [capacitaciones, setCapacitaciones] = useState<Training[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Estados de filtro
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroLab, setFiltroLab] = useState('Todos');
   const [filtroEstado, setFiltroEstado] = useState('Todos');
@@ -124,10 +125,16 @@ export function MisAuditorias() {
     }
   };
 
-
+  if (loading) {
+    return (
+      <div className="p-8 flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#003087]"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-6">
+    <div className="p-8 max-w-6xl mx-auto space-y-6 animate-in fade-in duration-500">
       <div>
         <h1 className="text-[22px] font-bold text-gray-900">Mis Auditorías Asignadas</h1>
         <p className="text-[14px] text-gray-500 mt-1">Selecciona una auditoría pendiente para comenzar o continuar tu trabajo de campo.</p>
@@ -217,13 +224,13 @@ export function MisAuditorias() {
 
                 <Button
                   onClick={() => handleAccion(audit, info.isChecklist)}
-                  className={`gap-2 shadow-sm ${audit.estado === 'mejoras_solicitadas'
+                  className={`gap-2 shadow-sm whitespace-nowrap ${!info.isChecklist
                     ? 'bg-white text-[#F59E0B] border border-[#F59E0B] hover:bg-orange-50'
                     : 'bg-[#003087] hover:bg-[#002366] text-white'
                     }`}
                 >
-                  {audit.estado === 'mejoras_solicitadas' ? (
-                    <><Wrench className="w-4 h-4" /> Actualizar Gantt</>
+                  {!info.isChecklist ? (
+                    <><Wrench className="w-4 h-4" /> Seguimiento / Gantt</>
                   ) : (
                     <><ClipboardCheck className="w-4 h-4" /> Iniciar Checklist <ArrowRight className="w-4 h-4" /></>
                   )}
@@ -234,6 +241,6 @@ export function MisAuditorias() {
           );
         })}
       </div>
-    </div >
+    </div>
   );
 }
