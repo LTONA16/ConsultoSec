@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Card } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
@@ -30,12 +30,9 @@ export function MisAuditorias() {
   const [capacitaciones, setCapacitaciones] = useState<Training[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Simulamos las auditorías asignadas al consultor con los estados del flujo estructurado
-  const [auditorias] = useState([
-    { id: 'AUD-2026-004', lab: 'Manufactura Avanzada', fecha: '18 Abr 2026', estado: 'Agendado' },
-    { id: 'AUD-2026-005', lab: 'Eléctrica', fecha: '20 Abr 2026', estado: 'Revisión con Lista de Verificación' },
-    { id: 'AUD-2026-006', lab: 'Mecatrónica Básica', fecha: '10 Abr 2026', estado: 'En Mejoras' },
-  ]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filtroLab, setFiltroLab] = useState('Todos');
+  const [filtroEstado, setFiltroEstado] = useState('Todos');
 
   useEffect(() => {
     if (token) {
@@ -127,15 +124,7 @@ export function MisAuditorias() {
     }
   };
 
-  const handleAccion = (audit: any) => {
-    // Si está agendada o en revisión, lo mandamos al checklist, pasándole el laboratorio por la URL oculta
-    if (audit.estado === 'Agendado' || audit.estado === 'Revisión con Lista de Verificación') {
-      navigate(`/consultor/checklist?id=${audit.id}&lab=${encodeURIComponent(audit.lab)}`);
-    } else {
-      // Para otros estados (como "En Mejoras"), lo podríamos mandar al Gantt
-      alert(`Navegar al seguimiento de ${audit.lab}`);
-    }
-  };
+
 
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-6">
@@ -225,26 +214,26 @@ export function MisAuditorias() {
                     <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-gray-400" /> Creada: {fechaFormat}</span>
                   </div>
                 </div>
-              </div>
 
-              <Button
-                onClick={() => handleAccion(audit)}
-                className={`gap-2 shadow-sm ${audit.estado === 'En Mejoras'
+                <Button
+                  onClick={() => handleAccion(audit, info.isChecklist)}
+                  className={`gap-2 shadow-sm ${audit.estado === 'mejoras_solicitadas'
                     ? 'bg-white text-[#F59E0B] border border-[#F59E0B] hover:bg-orange-50'
                     : 'bg-[#003087] hover:bg-[#002366] text-white'
-                  }`}
-              >
-                {audit.estado === 'En Mejoras' ? (
-                  <><Wrench className="w-4 h-4" /> Actualizar Gantt</>
-                ) : (
-                  <><ClipboardCheck className="w-4 h-4" /> Iniciar Checklist <ArrowRight className="w-4 h-4" /></>
-                )}
-              </Button>
+                    }`}
+                >
+                  {audit.estado === 'mejoras_solicitadas' ? (
+                    <><Wrench className="w-4 h-4" /> Actualizar Gantt</>
+                  ) : (
+                    <><ClipboardCheck className="w-4 h-4" /> Iniciar Checklist <ArrowRight className="w-4 h-4" /></>
+                  )}
+                </Button>
 
-            </div>
-          </Card>
-        ))}
-    </div>
+              </div>
+            </Card>
+          );
+        })}
+      </div>
     </div >
   );
 }
