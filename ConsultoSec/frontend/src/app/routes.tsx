@@ -6,7 +6,8 @@ import { DashboardAdmin } from "./pages/admin/DashboardAdmin";
 import { Solicitudes } from "./pages/admin/Solicitudes";
 import { Usuarios } from "./pages/admin/Usuarios";
 import { DashboardConsultor } from "./pages/consultor/DashboardConsultor";
-import { Capacitaciones } from "./pages/consultor/Capacitaciones";
+import { CapacitacionesAdmin } from "./pages/admin/Capacitaciones";
+import { CapacitacionesConsultor } from "./pages/consultor/Capacitaciones";
 import { Checklist } from "./pages/consultor/Checklist";
 import { MisAuditorias } from "./pages/consultor/Auditorias";
 import { Seguimiento } from "./pages/consultor/Seguimiento";
@@ -27,7 +28,7 @@ export const router = createBrowserRouter([
       { index: true, element: <DashboardAdmin /> },
       { path: "solicitudes", element: <Solicitudes /> },
       { path: "usuarios", element: <Usuarios /> },
-      { path: "capacitaciones", element: <Capacitaciones /> },
+      { path: "capacitaciones", element: <CapacitacionesAdmin /> },
       { path: "seguimiento", element: <Seguimiento /> },
 
     ],
@@ -37,7 +38,7 @@ export const router = createBrowserRouter([
     element: <ConsultorLayout />,
     children: [
       { index: true, element: <DashboardConsultor /> },
-      { path: "capacitaciones", element: <Capacitaciones /> },
+      { path: "capacitaciones", element: <CapacitacionesConsultor /> },
       { path: "auditorias", element: <MisAuditorias /> },
       { path: "checklist", element: <Checklist /> },
       { path: "seguimiento", element: <Seguimiento /> },

@@ -297,5 +297,16 @@ export const consultasService = {
       },
     });
     if (!response.ok) throw new Error("Error al eliminar la propuesta de mejora");
+  },
+
+  async eliminarConsulta(token: string, id: number): Promise<void> {
+    const response = await fetch(`${API_URL}/solicitudes/${id}/eliminar/`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+    });
+    if (!response.ok) throw new Error("Error al eliminar la solicitud");
   }
 };
