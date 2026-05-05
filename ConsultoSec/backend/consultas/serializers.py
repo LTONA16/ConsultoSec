@@ -27,7 +27,7 @@ class ConsultaSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         estado = attrs.get('estado', getattr(self.instance, 'estado', None))
 
-        if estado == 'finalizada' and self.instance:
+        if estado in ['finalizada', 'mejoras_solicitadas'] and self.instance:
             checklist_incompleto = self.instance.items_checklist.filter(
                 cumple='no_evaluado'
             ).exists()
