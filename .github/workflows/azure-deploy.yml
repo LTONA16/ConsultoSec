@@ -1,0 +1,52 @@
+name: Deploy Backend a Azure (Contenedor)
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'ConsultoSec/backend/**'
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
+    paths:
+      - 'ConsultoSec/backend/**'
+  workflow_dispatch:
+
+env:
+  BACKEND_DIR: 'ConsultoSec/backend'
+  IMAGE_NAME: 'ghcr.io/${{ github.repository }}/consultosec-api'
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Login en GitHub Container Registry (GHCR)
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Construir y subir imagen Docker
+        run: |
+          IMAGE_LOWER=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
+          
+          cd ${{ env.BACKEND_DIR }}
+          docker build . -t $IMAGE_LOWER:latest -t $IMAGE_LOWER:${{ github.sha }}
+          docker push $IMAGE_LOWER --all-tags
+
+      - name: Desplegar en Azure Web App for Containers
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'consultosec' 
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          images: ${{ env.IMAGE_NAME }}:${{ github.sha }}

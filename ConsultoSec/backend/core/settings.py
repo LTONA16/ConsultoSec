@@ -13,7 +13,11 @@ SECRET_KEY = 'django-insecure-&=xnoi@*(4fcz_%%xjy6rb1)n7c^!w81*q47u7%)nk4us0jdcg
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "consultosec-dpbjh5grejfrgaf9.mexicocentral-01.azurewebsites.net",
+    "localhost",
+    "127.0.0.1"
+]
 
 
 # Application definition
@@ -70,14 +74,16 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+import os
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'consultosec_local',
-        'USER': 'admin',
-        'PASSWORD': 'adminpassword',
-        'HOST': '127.0.0.1', # Nos conectamos al puerto expuesto por Docker
-        'PORT': '5432',
+        'NAME': os.environ.get('DB_NAME', 'consultosec_local'),
+        'USER': os.environ.get('DB_USER', 'admin'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'adminpassword'),
+        'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
 
@@ -137,6 +143,7 @@ AUTHENTICATION_BACKENDS = [
 
 # CORS Config
 # Permitimos que nuestro frontend local hable con la API
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
@@ -157,6 +164,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 AUTH_USER_MODEL = 'users.User'
 

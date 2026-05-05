@@ -1,5 +1,5 @@
 # backend/Dockerfile
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 # Variables de entorno para optimizar Python en contenedores
 ENV PYTHONDONTWRITEBYTECODE=1
