@@ -106,7 +106,7 @@ export const Reportes = () => {
   return (
     <div className="p-8 w-full bg-[#F5F5F5] min-h-screen animate-in fade-in duration-500">
       <header className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Centro de Reportes</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Test</h1>
         <p className="text-gray-500 mt-1">Genera y descarga reportes detallados de las auditorías realizadas.</p>
       </header>
 
