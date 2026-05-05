@@ -34,7 +34,7 @@ class ConsultaViewSet(viewsets.ModelViewSet):
             return Consulta.objects.filter(eliminado=False)
             
         # Consultores solo ven las auditorías en las que están asignados como responsables
-        return Consulta.objects.filter(responsables=user).distinct()
+        return Consulta.objects.filter(responsables=user, eliminado=False).distinct()
     
     @action(detail=True, methods=['get'], url_path='pdf')
     def generar_pdf(self, request, pk=None):
@@ -69,8 +69,7 @@ class ConsultaViewSet(viewsets.ModelViewSet):
         response['Content-Disposition'] = f'attachment; filename="Auditoria_{consulta.id}.pdf"'
         
         return response
-        return Consulta.objects.filter(responsables=user, eliminado=False).distinct()
-
+    
     @action(detail=True, methods=['patch'], url_path='eliminar')
     def eliminar_logico(self, request, pk=None):
         consulta = self.get_object()

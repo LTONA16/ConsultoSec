@@ -4,7 +4,7 @@ import { Card } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
-import { Calendar, ClipboardCheck, ArrowRight, Wrench, Search, Filter } from 'lucide-react';
+import { Calendar, ClipboardCheck, ArrowRight, Wrench, Search, Filter, XCircle, AlertTriangle } from 'lucide-react';
 import { consultasService, Consulta, Training } from '../../../features/consultas/services/consultasService';
 import { useAuth } from '../../../features/auth/AuthContext';
 import { toast } from 'sonner';
@@ -34,6 +34,10 @@ export function MisAuditorias() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroLab, setFiltroLab] = useState('Todos');
   const [filtroEstado, setFiltroEstado] = useState('Todos');
+
+  // Estado para confirmación de rechazo
+  const [confirmandoId, setConfirmandoId] = useState<number | null>(null);
+  const [rechazando, setRechazando] = useState(false);
 
   useEffect(() => {
     if (token) {
@@ -125,6 +129,28 @@ export function MisAuditorias() {
     }
   };
 
+  const handleRechazar = async (id: number) => {
+    if (!token) return;
+    setRechazando(true);
+    try {
+      await consultasService.eliminarConsulta(token, id);
+      setAuditorias(prev => prev.filter(a => a.id !== id));
+      setConfirmandoId(null);
+      toast.success("Solicitud rechazada", {
+        description: "La auditoría ha sido eliminada de tu lista.",
+        position: 'top-right',
+      });
+    } catch (err) {
+      console.error(err);
+      toast.error("Error al rechazar", {
+        description: "No se pudo rechazar la solicitud. Intenta de nuevo.",
+        position: 'top-right',
+      });
+    } finally {
+      setRechazando(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center min-h-[60vh]">
@@ -203,9 +229,10 @@ export function MisAuditorias() {
         ) : auditoriasFiltradas.map((audit) => {
           const info = getEstadoInfo(audit.estado);
           const fechaFormat = new Date(audit.fecha_creacion).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+          const isConfirming = confirmandoId === audit.id;
 
           return (
-            <Card key={audit.id} className="p-6 border border-[#E8E8E8] hover:shadow-md transition-shadow bg-white">
+            <Card key={audit.id} className={`p-6 border transition-all bg-white ${isConfirming ? 'border-red-300 shadow-md shadow-red-50' : 'border-[#E8E8E8] hover:shadow-md'}`}>
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
 
                 <div className="space-y-2 flex-1">
@@ -220,21 +247,68 @@ export function MisAuditorias() {
                     <span className="flex items-center gap-1.5"><ClipboardCheck className="w-4 h-4 text-gray-400" /> Auditoría #{audit.id}</span>
                     <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-gray-400" /> Creada: {fechaFormat}</span>
                   </div>
+
+                  {/* Confirmación inline */}
+                  {isConfirming && (
+                    <div className="flex items-center gap-3 mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
+                      <p className="text-[13px] text-red-700 font-medium flex-1">
+                        ¿Seguro que quieres rechazar esta auditoría? Esta acción no se puede deshacer.
+                      </p>
+                      <div className="flex gap-2 shrink-0">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-gray-600 border-gray-300 h-8 text-xs"
+                          onClick={() => setConfirmandoId(null)}
+                          disabled={rechazando}
+                        >
+                          Cancelar
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="bg-red-600 hover:bg-red-700 text-white h-8 text-xs gap-1"
+                          onClick={() => handleRechazar(audit.id)}
+                          disabled={rechazando}
+                        >
+                          {rechazando ? (
+                            <span className="animate-spin rounded-full h-3 w-3 border-b border-white inline-block" />
+                          ) : (
+                            <XCircle className="w-3 h-3" />
+                          )}
+                          Confirmar rechazo
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <Button
-                  onClick={() => handleAccion(audit, info.isChecklist)}
-                  className={`gap-2 shadow-sm whitespace-nowrap ${!info.isChecklist
-                    ? 'bg-white text-[#F59E0B] border border-[#F59E0B] hover:bg-orange-50'
-                    : 'bg-[#003087] hover:bg-[#002366] text-white'
-                    }`}
-                >
-                  {!info.isChecklist ? (
-                    <><Wrench className="w-4 h-4" /> Seguimiento / Gantt</>
-                  ) : (
-                    <><ClipboardCheck className="w-4 h-4" /> Iniciar Checklist <ArrowRight className="w-4 h-4" /></>
-                  )}
-                </Button>
+                {!isConfirming && (
+                  <div className="flex gap-3 shrink-0">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300 gap-1.5"
+                      onClick={() => setConfirmandoId(audit.id)}
+                    >
+                      <XCircle className="w-4 h-4" />
+                      Rechazar
+                    </Button>
+                    <Button
+                      onClick={() => handleAccion(audit, info.isChecklist)}
+                      className={`gap-2 shadow-sm whitespace-nowrap ${!info.isChecklist
+                        ? 'bg-white text-[#F59E0B] border border-[#F59E0B] hover:bg-orange-50'
+                        : 'bg-[#003087] hover:bg-[#002366] text-white'
+                        }`}
+                    >
+                      {!info.isChecklist ? (
+                        <><Wrench className="w-4 h-4" /> Seguimiento / Gantt</>
+                      ) : (
+                        <><ClipboardCheck className="w-4 h-4" /> Iniciar Checklist <ArrowRight className="w-4 h-4" /></>
+                      )}
+                    </Button>
+                  </div>
+                )}
 
               </div>
             </Card>
