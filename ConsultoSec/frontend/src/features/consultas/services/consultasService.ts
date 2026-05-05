@@ -201,7 +201,12 @@ export const consultasService = {
       },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error("Error al crear la capacitación");
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const error: any = new Error("Error al crear la capacitación");
+      error.response = { data: errorData };
+      throw error;
+    }
     return response.json();
   },
 
@@ -214,7 +219,12 @@ export const consultasService = {
       },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error("Error al actualizar la capacitación");
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const error: any = new Error("Error al actualizar la capacitación");
+      error.response = { data: errorData };
+      throw error;
+    }
     return response.json();
   },
 
