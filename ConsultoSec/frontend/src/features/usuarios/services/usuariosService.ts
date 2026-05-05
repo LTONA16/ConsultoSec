@@ -1,3 +1,5 @@
+import { redirectToLoginOnUnauthorized } from "../../auth/services/authSession";
+
 export interface Usuario {
   id: number;
   username: string;
@@ -22,8 +24,9 @@ export const usuariosService = {
     });
 
     if (!response.ok) {
-      throw new Error("Error al obtener los usuarios");
-    }
+  redirectToLoginOnUnauthorized(response);
+  throw new Error("Error al obtener los usuarios");
+}
 
     return response.json();
   },
@@ -38,7 +41,10 @@ export const usuariosService = {
       body: JSON.stringify(data),
     });
     
-    if (!response.ok) throw new Error("Error al crear el usuario");
+    if (!response.ok) {
+  redirectToLoginOnUnauthorized(response);
+  throw new Error("Error al crear el usuario");
+}
     return response.json();
   },
 
@@ -52,7 +58,10 @@ export const usuariosService = {
       body: JSON.stringify({ is_active: isActive }),
     });
     
-    if (!response.ok) throw new Error("Error al actualizar el estado del usuario");
+    if (!response.ok) {
+  redirectToLoginOnUnauthorized(response);
+  throw new Error("Error al actualizar el estado del usuario");
+}
     return response.json();
   },
 
@@ -66,7 +75,10 @@ export const usuariosService = {
       body: JSON.stringify(data),
     });
     
-    if (!response.ok) throw new Error("Error al actualizar el usuario");
+    if (!response.ok) {
+  redirectToLoginOnUnauthorized(response);
+  throw new Error("Error al actualizar el usuario");
+}
     return response.json();
   }
 };

@@ -1,3 +1,5 @@
+import { redirectToLoginOnUnauthorized } from "../../auth/services/authSession";
+
 export interface ChecklistItem {
   id: number;
   consulta: number;
@@ -95,6 +97,7 @@ export const consultasService = {
     });
 
     if (!response.ok) {
+      redirectToLoginOnUnauthorized(response);
       throw new Error("Error al obtener las consultas");
     }
 
@@ -111,6 +114,7 @@ export const consultasService = {
     });
 
     if (!response.ok) {
+      redirectToLoginOnUnauthorized(response);
       throw new Error(`Error al obtener la consulta ${id}`);
     }
 
@@ -126,23 +130,31 @@ export const consultasService = {
       },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error("Error al actualizar la consulta");
-    return response.json();
+    if (!response.ok) {
+  redirectToLoginOnUnauthorized(response);
+  throw new Error("Error al actualizar la consulta");
+}
+
+return response.json();
   },
 
   async actualizarChecklistItem(token: string, id: number, data: Partial<ChecklistItem>): Promise<ChecklistItem> {
-    const response = await fetch(`${API_URL}/checklists/${id}/`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) throw new Error("Error al actualizar el item del checklist");
-    return response.json();
-  },
+  const response = await fetch(`${API_URL}/checklists/${id}/`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify(data),
+  });
 
+  if (!response.ok) {
+    redirectToLoginOnUnauthorized(response);
+    throw new Error("Error al actualizar el item del checklist");
+  }
+
+  return response.json();
+},
   async obtenerAreas(token: string): Promise<AreaLaboratorio[]> {
     const response = await fetch(`${API_URL}/areas-laboratorio/`, {
       method: "GET",
@@ -151,7 +163,10 @@ export const consultasService = {
         "Authorization": `Bearer ${token}`
       },
     });
-    if (!response.ok) throw new Error("Error al obtener las áreas");
+    if (!response.ok) {
+  redirectToLoginOnUnauthorized(response);
+  throw new Error("Error al obtener las áreas");
+}
     return response.json();
   },
 
@@ -163,7 +178,10 @@ export const consultasService = {
         "Authorization": `Bearer ${token}`
       },
     });
-    if (!response.ok) throw new Error("Error al obtener los consultores");
+   if (!response.ok) {
+  redirectToLoginOnUnauthorized(response);
+  throw new Error("Error al obtener los consultores");
+}
     return response.json();
   },
 
@@ -176,7 +194,10 @@ export const consultasService = {
       },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error("Error al crear la consulta");
+    if (!response.ok) {
+  redirectToLoginOnUnauthorized(response);
+  throw new Error("Error al crear la consulta");
+}
     return response.json();
   },
 
@@ -188,7 +209,10 @@ export const consultasService = {
         "Authorization": `Bearer ${token}`
       },
     });
-    if (!response.ok) throw new Error("Error al obtener capacitaciones");
+    if (!response.ok) {
+  redirectToLoginOnUnauthorized(response);
+  throw new Error("Error al obtener capacitaciones");
+}
     return response.json();
   },
 
@@ -201,7 +225,10 @@ export const consultasService = {
       },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error("Error al crear la capacitación");
+    if (!response.ok) {
+  redirectToLoginOnUnauthorized(response);
+  throw new Error("Error al crear la capacitación");
+}
     return response.json();
   },
 
@@ -214,7 +241,10 @@ export const consultasService = {
       },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error("Error al actualizar la capacitación");
+    if (!response.ok) {
+  redirectToLoginOnUnauthorized(response);
+  throw new Error("Error al actualizar la capacitación");
+}
     return response.json();
   },
 
@@ -237,7 +267,10 @@ export const consultasService = {
       },
       body: formData,
     });
-    if (!response.ok) throw new Error(`Error al subir archivo: ${file.name}`);
+   if (!response.ok) {
+  redirectToLoginOnUnauthorized(response);
+  throw new Error(`Error al subir archivo: ${file.name}`);
+}
     return response.json();
   },
 
@@ -248,7 +281,10 @@ export const consultasService = {
         "Authorization": `Bearer ${token}`
       },
     });
-    if (!response.ok) throw new Error("Error al eliminar el archivo");
+   if (!response.ok) {
+  redirectToLoginOnUnauthorized(response);
+  throw new Error("Error al eliminar el archivo");
+}
   },
 
   async obtenerPropuestas(token: string, consultaId: number): Promise<PropuestaMejora[]> {
@@ -259,7 +295,10 @@ export const consultasService = {
         "Authorization": `Bearer ${token}`
       },
     });
-    if (!response.ok) throw new Error("Error al obtener las propuestas de mejora");
+   if (!response.ok) {
+  redirectToLoginOnUnauthorized(response);
+  throw new Error("Error al obtener las propuestas de mejora");
+}
     return response.json();
   },
 
@@ -272,7 +311,10 @@ export const consultasService = {
       },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error("Error al crear la propuesta de mejora");
+    if (!response.ok) {
+  redirectToLoginOnUnauthorized(response);
+  throw new Error("Error al crear la propuesta de mejora");
+}
     return response.json();
   },
 
@@ -285,7 +327,10 @@ export const consultasService = {
       },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error("Error al actualizar la propuesta de mejora");
+    if (!response.ok) {
+  redirectToLoginOnUnauthorized(response);
+  throw new Error("Error al actualizar la propuesta de mejora");
+}
     return response.json();
   },
 
@@ -296,6 +341,9 @@ export const consultasService = {
         "Authorization": `Bearer ${token}`
       },
     });
-    if (!response.ok) throw new Error("Error al eliminar la propuesta de mejora");
+    if (!response.ok) {
+  redirectToLoginOnUnauthorized(response);
+  throw new Error("Error al eliminar la propuesta de mejora");
+}
   }
 };

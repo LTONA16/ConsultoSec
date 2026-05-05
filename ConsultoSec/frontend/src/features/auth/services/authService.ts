@@ -1,3 +1,5 @@
+import { redirectToLoginOnUnauthorized } from "./authSession";
+
 export interface UserProfile {
   id: number;
   username: string;
@@ -44,8 +46,9 @@ export const authService = {
     });
 
     if (!response.ok) {
-      throw new Error("No se pudo obtener el usuario");
-    }
+  redirectToLoginOnUnauthorized(response);
+  throw new Error("No se pudo obtener el usuario");
+}
 
     const data: UserProfile = await response.json();
     return data;
