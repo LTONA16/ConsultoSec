@@ -10,6 +10,7 @@ import { Capacitaciones } from "./pages/consultor/Capacitaciones";
 import { Checklist } from "./pages/consultor/Checklist";
 import { MisAuditorias } from "./pages/consultor/Auditorias";
 import { Seguimiento } from "./pages/consultor/Seguimiento";
+import { Reportes } from "./pages/admin/Reportes";
 
 export const router = createBrowserRouter([
   {
@@ -28,6 +29,7 @@ export const router = createBrowserRouter([
       { path: "solicitudes", element: <Solicitudes /> },
       { path: "usuarios", element: <Usuarios /> },
       { path: "capacitaciones", element: <Capacitaciones /> },
+      { path: "reportes", element: <Reportes /> },
       { path: "seguimiento", element: <Seguimiento /> },
 
     ],

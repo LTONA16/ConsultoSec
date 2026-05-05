@@ -297,5 +297,16 @@ export const consultasService = {
       },
     });
     if (!response.ok) throw new Error("Error al eliminar la propuesta de mejora");
+  },
+
+  async descargarPDF(token: string, id: number): Promise<Blob> {
+    const response = await fetch(`${API_URL}/solicitudes/${id}/pdf/`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      },
+    });
+    if (!response.ok) throw new Error("Error al descargar el PDF");
+    return response.blob();
   }
 };

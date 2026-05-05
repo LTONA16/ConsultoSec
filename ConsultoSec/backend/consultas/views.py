@@ -4,8 +4,6 @@ from .serializers import ConsultaSerializer, ChecklistItemSerializer, AreaCatalo
 from django.template.loader import render_to_string
 from django.http import HttpResponse
 from rest_framework.decorators import action
-from weasyprint import HTML
-
 class AreaCatalogoViewSet(viewsets.ModelViewSet):
     queryset = AreaCatalogo.objects.all()
     serializer_class = AreaCatalogoSerializer
@@ -60,6 +58,7 @@ class ConsultaViewSet(viewsets.ModelViewSet):
         html_string = render_to_string('reporte_auditoria.html', context)
         
         # 3. Convertimos a PDF. 
+        from weasyprint import HTML
         # base_url es clave: le dice a WeasyPrint dónde buscar las fotos (localhost:8000/media/...)
         pdf_file = HTML(string=html_string, base_url=request.build_absolute_uri('/')).write_pdf()
         
