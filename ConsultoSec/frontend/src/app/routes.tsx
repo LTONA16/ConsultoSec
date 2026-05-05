@@ -10,6 +10,7 @@ import { Capacitaciones } from "./pages/consultor/Capacitaciones";
 import { Checklist } from "./pages/consultor/Checklist";
 import { MisAuditorias } from "./pages/consultor/Auditorias";
 import { Seguimiento } from "./pages/consultor/Seguimiento";
+import { ProtectedRoute } from "../features/auth/ProtectedRoute";
 
 export const router = createBrowserRouter([
   {
@@ -21,9 +22,13 @@ export const router = createBrowserRouter([
     element: <Login />,
   },
   {
-    path: "/admin",
-    element: <AdminLayout />,
-    children: [
+  path: "/admin",
+  element: (
+    <ProtectedRoute allowedRoles={["ADMIN"]}>
+      <AdminLayout />
+    </ProtectedRoute>
+  ),
+  children: [
       { index: true, element: <DashboardAdmin /> },
       { path: "solicitudes", element: <Solicitudes /> },
       { path: "usuarios", element: <Usuarios /> },
@@ -33,9 +38,13 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    path: "/consultor",
-    element: <ConsultorLayout />,
-    children: [
+  path: "/consultor",
+  element: (
+    <ProtectedRoute allowedRoles={["CONSULTOR"]}>
+      <ConsultorLayout />
+    </ProtectedRoute>
+  ),
+  children: [
       { index: true, element: <DashboardConsultor /> },
       { path: "capacitaciones", element: <Capacitaciones /> },
       { path: "auditorias", element: <MisAuditorias /> },
