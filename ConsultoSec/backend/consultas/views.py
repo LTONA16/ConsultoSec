@@ -1,6 +1,10 @@
 from rest_framework import viewsets
 from .models import Consulta, ChecklistItem, AreaCatalogo, PropuestaMejora, RequisitoCatalogo, Capacitacion, CapacitacionArchivo
 from .serializers import ConsultaSerializer, ChecklistItemSerializer, AreaCatalogoSerializer, RequisitoCatalogoSerializer, SolicitudCreateSerializer, PropuestaMejoraSerializer, CapacitacionSerializer, CapacitacionArchivoSerializer
+from django.template.loader import render_to_string
+from django.http import HttpResponse
+from rest_framework.decorators import action
+from weasyprint import HTML
 
 class AreaCatalogoViewSet(viewsets.ModelViewSet):
     queryset = AreaCatalogo.objects.all()
@@ -31,6 +35,39 @@ class ConsultaViewSet(viewsets.ModelViewSet):
             
         # Consultores solo ven las auditorías en las que están asignados como responsables
         return Consulta.objects.filter(responsables=user).distinct()
+    
+    @action(detail=True, methods=['get'], url_path='pdf')
+    def generar_pdf(self, request, pk=None):
+        """
+        Endpoint GET /api/solicitudes/{id}/pdf/
+        Genera y descarga el reporte PDF de la auditoría.
+        """
+        consulta = self.get_object()
+        
+        # 1. Preparamos los datos que le vamos a enviar al HTML
+        context = {
+            'consulta': consulta,
+            'items': consulta.items_checklist.all(),
+            # Traemos las propuestas ordenadas por plazo (corto, mediano, largo)
+            'propuestas': consulta.propuestas_mejora.all().order_by('-plazo', 'fecha_inicio'),
+            
+            # Traemos las capacitaciones vinculadas a esta consulta
+            'capacitaciones': consulta.capacitaciones.all().order_by('fecha'),
+            'request': request, # Necesario para armar las rutas de las fotos
+        }
+        
+        # 2. Renderizamos la plantilla HTML con los datos de la base de datos
+        html_string = render_to_string('reporte_auditoria.html', context)
+        
+        # 3. Convertimos a PDF. 
+        # base_url es clave: le dice a WeasyPrint dónde buscar las fotos (localhost:8000/media/...)
+        pdf_file = HTML(string=html_string, base_url=request.build_absolute_uri('/')).write_pdf()
+        
+        # 4. Devolvemos el archivo forzando su descarga (attachment)
+        response = HttpResponse(pdf_file, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="Auditoria_{consulta.id}.pdf"'
+        
+        return response
 
 class ChecklistItemViewSet(viewsets.ModelViewSet):
     queryset = ChecklistItem.objects.all()
@@ -64,4 +101,3 @@ class CapacitacionViewSet(viewsets.ModelViewSet):
 class CapacitacionArchivoViewSet(viewsets.ModelViewSet):
     queryset = CapacitacionArchivo.objects.all()
     serializer_class = CapacitacionArchivoSerializer
-
