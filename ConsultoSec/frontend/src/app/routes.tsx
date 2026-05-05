@@ -31,7 +31,7 @@ export const router = createBrowserRouter([
       { path: "usuarios", element: <Usuarios /> },
       { path: "capacitaciones", element: <CapacitacionesAdmin /> },
       { path: "seguimiento", element: <Seguimiento /> },
-
+      { path: "reportes", element: <Reportes /> },
     ],
   },
   {
