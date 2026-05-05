@@ -1,4 +1,6 @@
 from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from .models import Consulta, ChecklistItem, AreaCatalogo, PropuestaMejora, RequisitoCatalogo, Capacitacion, CapacitacionArchivo
 from .serializers import ConsultaSerializer, ChecklistItemSerializer, AreaCatalogoSerializer, RequisitoCatalogoSerializer, SolicitudCreateSerializer, PropuestaMejoraSerializer, CapacitacionSerializer, CapacitacionArchivoSerializer
 from django.template.loader import render_to_string
@@ -29,7 +31,7 @@ class ConsultaViewSet(viewsets.ModelViewSet):
             
         # Administradores y superusuarios ven todas las auditorías
         if user.is_superuser or getattr(user, 'role', '') == 'ADMIN':
-            return Consulta.objects.all()
+            return Consulta.objects.filter(eliminado=False)
             
         # Consultores solo ven las auditorías en las que están asignados como responsables
         return Consulta.objects.filter(responsables=user).distinct()
@@ -67,6 +69,14 @@ class ConsultaViewSet(viewsets.ModelViewSet):
         response['Content-Disposition'] = f'attachment; filename="Auditoria_{consulta.id}.pdf"'
         
         return response
+        return Consulta.objects.filter(responsables=user, eliminado=False).distinct()
+
+    @action(detail=True, methods=['patch'], url_path='eliminar')
+    def eliminar_logico(self, request, pk=None):
+        consulta = self.get_object()
+        consulta.eliminado = True
+        consulta.save(update_fields=['eliminado'])
+        return Response({'status': 'eliminado'})
 
 class ChecklistItemViewSet(viewsets.ModelViewSet):
     queryset = ChecklistItem.objects.all()
