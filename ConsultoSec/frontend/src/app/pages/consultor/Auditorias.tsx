@@ -239,8 +239,10 @@ export function MisAuditorias() {
         ) : auditoriasFiltradas.map((audit) => {
           const info = getEstadoInfo(audit.estado);
           const fechaFormat = new Date(audit.fecha_creacion).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+          const isConfirming = confirmandoId === audit.id;
+
           return (
-            <Card key={audit.id} className="p-6 border transition-all bg-white border-[#E8E8E8] hover:shadow-md">
+            <Card key={audit.id} className={`p-6 border transition-all bg-white ${isConfirming ? 'border-red-300 shadow-md shadow-red-50' : 'border-[#E8E8E8] hover:shadow-md'}`}>
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
 
                 <div className="space-y-2 flex-1">
@@ -255,32 +257,69 @@ export function MisAuditorias() {
                     <span className="flex items-center gap-1.5"><ClipboardCheck className="w-4 h-4 text-gray-400" /> Auditoría #{audit.id}</span>
                     <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-gray-400" /> Creada: {fechaFormat}</span>
                   </div>
+
+                  {/* Confirmación inline */}
+                  {isConfirming && (
+                    <div className="flex items-center gap-3 mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
+                      <p className="text-[13px] text-red-700 font-medium flex-1">
+                        ¿Seguro que quieres rechazar esta auditoría? Esta acción no se puede deshacer.
+                      </p>
+                      <div className="flex gap-2 shrink-0">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-gray-600 border-gray-300 h-8 text-xs"
+                          onClick={() => setConfirmandoId(null)}
+                          disabled={rechazando}
+                        >
+                          Cancelar
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="bg-red-600 hover:bg-red-700 text-white h-8 text-xs gap-1"
+                          onClick={() => handleRechazar(audit.id)}
+                          disabled={rechazando}
+                        >
+                          {rechazando ? (
+                            <span className="animate-spin rounded-full h-3 w-3 border-b border-white inline-block" />
+                          ) : (
+                            <XCircle className="w-3 h-3" />
+                          )}
+                          Confirmar rechazo
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <div className="flex gap-3 shrink-0">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-gray-200 text-gray-700 hover:bg-gray-50 gap-2 font-semibold"
-                    onClick={() => setSelectedAudit(audit)}
-                  >
-                    <Eye className="w-4 h-4 text-gray-400" />
-                    Ver detalles
-                  </Button>
-                  <Button
-                    onClick={() => handleAccion(audit, info.isChecklist)}
-                    className={`gap-2 shadow-sm whitespace-nowrap font-semibold ${!info.isChecklist
-                      ? 'bg-white text-[#003087] border border-[#003087] hover:bg-blue-50'
-                      : 'bg-[#003087] hover:bg-[#002366] text-white'
-                      }`}
-                  >
-                    {!info.isChecklist ? (
-                      <><Wrench className="w-4 h-4" /> Seguimiento / Gantt</>
-                    ) : (
-                      <><ClipboardCheck className="w-4 h-4" /> Iniciar Checklist <ArrowRight className="w-4 h-4" /></>
-                    )}
-                  </Button>
-                </div>
+                {!isConfirming && (
+                  <div className="flex gap-3 shrink-0">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-gray-200 text-gray-700 hover:bg-gray-50 gap-2 font-semibold"
+                      onClick={() => setSelectedAudit(audit)}
+                    >
+                      <Eye className="w-4 h-4 text-gray-400" />
+                      Ver detalles
+                    </Button>
+                    <Button
+                      onClick={() => handleAccion(audit, info.isChecklist)}
+                      className={`gap-2 shadow-sm whitespace-nowrap font-semibold ${!info.isChecklist
+                        ? 'bg-white text-[#003087] border border-[#003087] hover:bg-blue-50'
+                        : 'bg-[#003087] hover:bg-[#002366] text-white'
+                        }`}
+                    >
+                      {!info.isChecklist ? (
+                        <><Wrench className="w-4 h-4" /> Seguimiento / Gantt</>
+                      ) : (
+                        <><ClipboardCheck className="w-4 h-4" /> Iniciar Checklist <ArrowRight className="w-4 h-4" /></>
+                      )}
+                    </Button>
+                  </div>
+                )}
+
               </div>
             </Card>
           );
@@ -293,6 +332,9 @@ export function MisAuditorias() {
             <div className="flex flex-col h-full">
               {/* Header con gradiente */}
               <div className="bg-gradient-to-r from-[#003087] to-[#0056b3] p-8 text-white relative">
+                <div className="absolute top-0 right-0 p-8 opacity-10">
+                  <ClipboardCheck className="w-32 h-32 rotate-12" />
+                </div>
                 <div className="relative z-10">
                   <div className="flex items-center gap-3 mb-2">
                     <Badge className="bg-white/20 hover:bg-white/30 text-white border-none backdrop-blur-sm px-3 py-1">
@@ -317,8 +359,8 @@ export function MisAuditorias() {
                       <Calendar className="w-3.5 h-3.5" /> Fecha de creación
                     </p>
                     <p className="text-[15px] font-semibold text-gray-900 bg-gray-50 p-3 rounded-xl border border-gray-100">
-                      {new Date(selectedAudit.fecha_creacion).toLocaleDateString('es-ES', { 
-                        day: '2-digit', month: 'long', year: 'numeric' 
+                      {new Date(selectedAudit.fecha_creacion).toLocaleDateString('es-ES', {
+                        day: '2-digit', month: 'long', year: 'numeric'
                       })}
                     </p>
                   </div>
@@ -327,8 +369,8 @@ export function MisAuditorias() {
                       <ClockIcon className="w-3.5 h-3.5" /> Última actualización
                     </p>
                     <p className="text-[15px] font-semibold text-gray-900 bg-gray-50 p-3 rounded-xl border border-gray-100">
-                      {new Date(selectedAudit.fecha_actualizacion).toLocaleDateString('es-ES', { 
-                        day: '2-digit', month: 'long', year: 'numeric' 
+                      {new Date(selectedAudit.fecha_actualizacion).toLocaleDateString('es-ES', {
+                        day: '2-digit', month: 'long', year: 'numeric'
                       })}
                     </p>
                   </div>
@@ -341,7 +383,7 @@ export function MisAuditorias() {
                   </p>
                   <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 min-h-[60px] flex items-center">
                     <p className="text-[14px] text-gray-600 font-medium">
-                      {selectedAudit.responsables && selectedAudit.responsables.length > 0 
+                      {selectedAudit.responsables && selectedAudit.responsables.length > 0
                         ? `${selectedAudit.responsables.length} consultores asignados a este laboratorio.`
                         : "No se han listado responsables específicos."}
                     </p>
@@ -373,7 +415,7 @@ export function MisAuditorias() {
                   <XCircle className="w-4 h-4" />
                   Eliminar Solicitud
                 </Button>
-                
+
                 <div className="flex items-center gap-3">
                   <Button
                     variant="ghost"
@@ -394,7 +436,7 @@ export function MisAuditorias() {
                   </Button>
                 </div>
               </div>
-              
+
               {/* Overlay de confirmación de borrado */}
               {confirmandoId === selectedAudit.id && (
                 <div className="absolute inset-0 z-50 bg-white/95 backdrop-blur-sm flex items-center justify-center p-8 animate-in fade-in zoom-in duration-200">

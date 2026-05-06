@@ -355,11 +355,17 @@ export function Checklist() {
                         </Label>
                         <Textarea
                           placeholder="Escribe aquí los detalles del hallazgo..."
-                          className="bg-white border-[#E8E8E8] text-[13px] resize-none"
+                          className="bg-white border-[#E8E8E8] text-[13px] resize-none w-full break-all"
                           rows={2}
                           value={q.observacion || ''}
+                          maxLength={128}
                           onChange={(e) => handleNota(q, e.target.value)}
                         />
+                        <div className="flex justify-end">
+                          <span className={`text-[10px] font-medium ${(q.observacion || '').length >= 120 ? 'text-red-500' : 'text-gray-400'}`}>
+                            {(q.observacion || '').length}/128
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </Card>
