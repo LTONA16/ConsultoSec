@@ -1,4 +1,5 @@
 from pathlib import Path
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -15,6 +16,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     "consultosec-dpbjh5grejfrgaf9.mexicocentral-01.azurewebsites.net",
+    "169.254.129.2", # Azure Health Check
     "localhost",
     "127.0.0.1"
 ]
@@ -41,9 +43,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -144,12 +146,16 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # CORS Config
-# Permitimos que nuestro frontend local hable con la API
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
+# Añade "authorization" a los headers por defecto
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "https://salmon-grass-083681a10.7.azurestaticapps.net",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "authorization",
 ]
 
 # Internationalization

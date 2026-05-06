@@ -49,11 +49,6 @@ class UserMeView(APIView):
     def get(self, request, *args, **kwargs):
         user = request.user
         serializer = UserCreateSerializer(user)
-        # Podríamos omitir datos sensibles (como pwd) en la respuesta, pero
-        # UserCreateSerializer por defecto no devuelve el 'password' si tiene write_only=True
-        # Por seguridad retornamos un diccionario simple en caso de que el serializer sea intrusivo:
-        
-        # Para que sea mas facil de leer y usar por el frontend:
         return Response({
             "id": user.id,
             "username": user.username,
