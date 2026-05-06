@@ -16,6 +16,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     "consultosec-dpbjh5grejfrgaf9.mexicocentral-01.azurewebsites.net",
+    "169.254.129.2", # Azure Health Check
     "localhost",
     "127.0.0.1"
 ]
