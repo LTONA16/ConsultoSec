@@ -62,7 +62,7 @@ export const Reportes = () => {
     } catch (error) {
       console.error(error);
       toast.dismiss(loadingToast);
-      toast.error("Error al generar el PDF. Asegúrate de tener instalado GTK3 en el servidor.");
+      toast.error("El reporte solo está disponible para auditorías finalizadas.");
     }
   };
 

@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import Consulta, ChecklistItem, AreaCatalogo, PropuestaMejora, RequisitoCatalogo, Capacitacion, CapacitacionArchivo
@@ -6,6 +6,7 @@ from .serializers import ConsultaSerializer, ChecklistItemSerializer, AreaCatalo
 from django.template.loader import render_to_string
 from django.http import HttpResponse
 from rest_framework.decorators import action
+
 class AreaCatalogoViewSet(viewsets.ModelViewSet):
     queryset = AreaCatalogo.objects.all()
     serializer_class = AreaCatalogoSerializer
@@ -44,6 +45,14 @@ class ConsultaViewSet(viewsets.ModelViewSet):
         """
         consulta = self.get_object()
         
+        # Solo se permite generar el PDF si la auditoría ha concluido
+        if consulta.estado != 'finalizada':
+            return Response(
+                {"detail": "El reporte PDF solo puede generarse cuando la auditoría está en estado 'Finalizada'."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
         # 1. Preparamos los datos que le vamos a enviar al HTML
         context = {
             'consulta': consulta,
