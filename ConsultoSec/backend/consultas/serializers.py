@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Consulta, ChecklistItem, AreaCatalogo, RequisitoCatalogo, PropuestaMejora, Capacitacion, CapacitacionArchivo
+from django.utils import timezone
 
 class AreaCatalogoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -39,6 +40,11 @@ class SolicitudCreateSerializer(serializers.ModelSerializer):
         """
         if not value:
             raise serializers.ValidationError("El área de laboratorio es obligatoria para procesar la solicitud.")
+        return value
+    
+    def validate_fecha_finalizacion_propuesta(self, value):
+        if value and value.date() < timezone.localdate():
+            raise serializers.ValidationError("La fecha propuesta no puede ser anterior a la fecha actual.")
         return value
     
 class PropuestaMejoraSerializer(serializers.ModelSerializer):
