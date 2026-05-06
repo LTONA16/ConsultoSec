@@ -79,6 +79,7 @@ class ConsultaViewSet(viewsets.ModelViewSet):
         
         return response
     
+
     @action(detail=True, methods=['patch'], url_path='eliminar')
     def eliminar_logico(self, request, pk=None):
         consulta = self.get_object()
