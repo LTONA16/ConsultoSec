@@ -6,7 +6,7 @@ import { Label } from '../../components/ui/label';
 import { Input } from '../../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Switch } from '../../components/ui/switch';
-import { Plus, Loader2, Pencil, Key } from 'lucide-react';
+import { Plus, Loader2, Pencil, Key, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Table,
@@ -24,6 +24,7 @@ export function Usuarios() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUserId, setEditingUserId] = useState<number | null>(null);
@@ -362,6 +363,17 @@ export function Usuarios() {
 
       </div>
 
+      {/* Search bar */}
+      <div className="relative w-full max-w-sm">
+        <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
+        <Input
+          placeholder="Buscar por nombre..."
+          className="pl-9 h-9 text-[13px]"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
       {/* Table */}
       <div className="bg-white rounded-lg border border-[#E8E8E8] shadow-sm">
         <Table>
@@ -377,7 +389,10 @@ export function Usuarios() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {usuarios.map((usuario) => {
+            {usuarios.filter((usuario) => {
+              const nombreCompleto = `${usuario.first_name} ${usuario.last_name}`.trim().toLowerCase();
+              return nombreCompleto.includes(searchTerm.toLowerCase());
+            }).map((usuario) => {
               const nombreCompleto = `${usuario.first_name} ${usuario.last_name}`.trim() || usuario.username;
               const displayRole = usuario.role === 'ADMIN' ? 'Administrador' : 'Consultor';
               const isActivo = usuario.is_active;

@@ -29,7 +29,7 @@ class SolicitudCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Consulta
         # Definimos los campos que el Frontend puede enviar al crear
-        fields = ['id', 'area_laboratorio', 'notas', 'responsables','fecha_finalizacion_propuesta']
+        fields = ['id', 'area_laboratorio', 'notas', 'responsables', 'fecha_finalizacion_propuesta', 'estado']
         
     def validate_area_laboratorio(self, value):
         """
@@ -41,8 +41,8 @@ class SolicitudCreateSerializer(serializers.ModelSerializer):
         return value
     
     def validate_fecha_finalizacion_propuesta(self, value):
-        if value and value < timezone.now():
-         raise serializers.ValidationError("La fecha propuesta no puede ser anterior a la fecha actual.")
+        if value and value.date() < timezone.localdate():
+            raise serializers.ValidationError("La fecha propuesta no puede ser anterior a la fecha actual.")
         return value
     
 class PropuestaMejoraSerializer(serializers.ModelSerializer):

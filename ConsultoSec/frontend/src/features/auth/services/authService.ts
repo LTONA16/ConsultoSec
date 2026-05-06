@@ -12,7 +12,7 @@ export interface AuthResponse {
   access: string;
 }
 
-const API_URL = "http://localhost:8000/api"; // Default dev url
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 export const authService = {
   async login(email: string, password: string):Promise<AuthResponse> {
@@ -20,6 +20,7 @@ export const authService = {
     // Mapeamos el parámetro (aunque se llame email) al campo 'username' para que el backend lo acepte.
     const response = await fetch(`${API_URL}/auth/token/`, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -37,6 +38,7 @@ export const authService = {
   async getCurrentUser(token: string): Promise<UserProfile> {
     const response = await fetch(`${API_URL}/users/me/`, {
       method: "GET",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`

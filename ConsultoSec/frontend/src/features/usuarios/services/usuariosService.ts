@@ -9,12 +9,13 @@ export interface Usuario {
   date_joined?: string;
 }
 
-const API_URL = "http://localhost:8000/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 export const usuariosService = {
   async obtenerUsuarios(token: string): Promise<Usuario[]> {
     const response = await fetch(`${API_URL}/users/`, {
       method: "GET",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
@@ -31,6 +32,7 @@ export const usuariosService = {
   async crearUsuario(token: string, data: Partial<Usuario> & { password?: string }): Promise<Usuario> {
     const response = await fetch(`${API_URL}/users/`, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
@@ -45,6 +47,7 @@ export const usuariosService = {
   async actualizarEstado(token: string, id: number, isActive: boolean): Promise<Usuario> {
     const response = await fetch(`${API_URL}/users/${id}/`, {
       method: "PATCH",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
@@ -59,6 +62,7 @@ export const usuariosService = {
   async actualizarUsuario(token: string, id: number, data: Partial<Usuario>): Promise<Usuario> {
     const response = await fetch(`${API_URL}/users/${id}/`, {
       method: "PATCH",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
