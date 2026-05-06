@@ -144,8 +144,10 @@ AUTHENTICATION_BACKENDS = [
 # CORS Config
 # Permitimos que nuestro frontend local hable con la API
 CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "https://salmon-grass-083681a10.7.azurestaticapps.net",
 ]
 
 # Internationalization
