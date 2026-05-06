@@ -12,6 +12,7 @@ import { Checklist } from "./pages/consultor/Checklist";
 import { MisAuditorias } from "./pages/consultor/Auditorias";
 import { Seguimiento } from "./pages/consultor/Seguimiento";
 import { Reportes } from "./pages/admin/Reportes";
+import { ReportesConsultor } from "./pages/consultor/Reportes";
 
 export const router = createBrowserRouter([
   {
@@ -43,6 +44,7 @@ export const router = createBrowserRouter([
       { path: "auditorias", element: <MisAuditorias /> },
       { path: "checklist", element: <Checklist /> },
       { path: "seguimiento", element: <Seguimiento /> },
+      { path: "reportes", element: <ReportesConsultor /> },
     ],
   },
 ]);
