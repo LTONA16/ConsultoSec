@@ -148,9 +148,23 @@ export function Checklist() {
   const handleFinalizar = async () => {
     if (!token || !consulta) return;
     setIsFinishing(true);
+
+    // --- SOLUCIÓN AL BUCLE: Lógica condicional de estados ---
+    // Si la auditoría ya viene de regreso (Última Revisión), el destino final es 'finalizada'.
+    // Si es la primera vez que se hace el checklist, el destino es 'mejoras_solicitadas'.
+    const nuevoEstado = consulta.estado === 'ultima_revision' 
+      ? 'finalizada' 
+      : 'mejoras_solicitadas';
+
     try {
-      await consultasService.actualizarConsulta(token, consulta.id, { estado: 'mejoras_solicitadas' });
-      toast.success('Auditoría finalizada con éxito', { position: 'top-right', duration: 3000, style: { marginTop: '6em' } });
+      await consultasService.actualizarConsulta(token, consulta.id, { estado: nuevoEstado });
+      
+      // Opcional: Mostramos un mensaje diferente dependiendo de lo que haya pasado
+      const mensajeExito = nuevoEstado === 'finalizada' 
+        ? 'Auditoría concluida definitivamente' 
+        : 'Auditoría finalizada con éxito (Etapa de Mejoras)';
+
+      toast.success(mensajeExito, { position: 'top-right', duration: 3000, style: { marginTop: '6em' } });
       navigate('/consultor/auditorias');
     } catch (error) {
       console.error("Error al finalizar la auditoría", error);
