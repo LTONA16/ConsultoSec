@@ -53,6 +53,7 @@ class Consulta(models.Model):
     fecha_finalizacion = models.DateTimeField(null=True, blank=True)
     fecha_finalizacion_propuesta = models.DateTimeField(null=True, blank=True)
 
+    eliminado = models.BooleanField(default=False, help_text="Eliminado lógico")
 
     class Meta:
         verbose_name = "Consulta"

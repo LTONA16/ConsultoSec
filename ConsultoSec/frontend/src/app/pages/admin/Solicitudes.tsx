@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Badge } from '../../components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '../../components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../../components/ui/command';
-import { Calendar as CalendarIcon, UserPlus, ClipboardCheck, Search, Loader2, X, Check, ChevronsUpDown } from 'lucide-react';
+import { Calendar as CalendarIcon, UserPlus, ClipboardCheck, Search, Loader2, X, Check, ChevronsUpDown, ArrowUpDown, ArrowUpAZ, ArrowDownAZ, Hash, CalendarClock, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../../../features/auth/AuthContext';
 import { consultasService, Consulta, AreaLaboratorio, Usuario } from '../../../features/consultas/services/consultasService';
@@ -50,6 +50,8 @@ export function Solicitudes() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [consultorSort, setConsultorSort] = useState<'none' | 'asc' | 'desc'>('none');
+  const [solicitudSort, setSolicitudSort] = useState<'none' | 'id' | 'fecha'>('none');
 
   // Form State
   const [selectedArea, setSelectedArea] = useState<string>('');
@@ -107,8 +109,8 @@ export function Solicitudes() {
     try {
       let isoDate = null;
       if (fechaPropuesta) {
-        // Aseguramos formato ISO
-        isoDate = new Date(fechaPropuesta).toISOString();
+        // Enviamos la fecha con horario de mediodía para evitar desfase por timezone
+        isoDate = `${fechaPropuesta}T12:00:00`;
       }
 
       const payload: Partial<Consulta> = {
@@ -145,11 +147,71 @@ export function Solicitudes() {
     }
   };
 
-  const filteredSolicitudes = solicitudes.filter(sol => {
-    const term = searchTerm.toLowerCase();
-    const areaName = (sol.area_nombre ? `${sol.area_nombre} #${sol.id}` : `Consulta #${sol.id}`).toLowerCase();
-    return areaName.includes(term);
-  });
+  const toggleConsultorSort = () => {
+    setConsultorSort(prev => {
+      if (prev === 'none') return 'asc';
+      if (prev === 'asc') return 'desc';
+      return 'none';
+    });
+  };
+
+  const toggleSolicitudSort = () => {
+    setSolicitudSort(prev => {
+      if (prev === 'none') return 'id';
+      if (prev === 'id') return 'fecha';
+      return 'none';
+    });
+  };
+
+  const handleDelete = async (id: number) => {
+    if (confirm("¿Estás seguro de que deseas eliminar esta solicitud?")) {
+      try {
+        await consultasService.eliminarConsulta(token!, id);
+        setSolicitudes(solicitudes.filter(s => s.id !== id));
+        toast.success("Solicitud eliminada", {
+          description: <span style={{ color: '#4b5563' }}>La solicitud ha sido eliminada correctamente.</span>,
+          position: 'top-right',
+          classNames: { title: 'text-slate-900', description: 'text-slate-600 font-medium' }
+        });
+      } catch (error) {
+        console.error("Error al eliminar la solicitud:", error);
+        toast.error("Error", {
+          description: <span style={{ color: '#4b5563' }}>Hubo un problema al eliminar la solicitud.</span>,
+          position: 'top-right',
+          classNames: { title: 'text-slate-900', description: 'text-slate-600 font-medium' }
+        });
+      }
+    }
+  };
+
+  const getConsultorName = (sol: Consulta) => {
+    if (!sol.responsables || sol.responsables.length === 0) return '';
+    const c = consultores.find(co => co.id === sol.responsables[0]);
+    return c ? `${c.first_name || ''} ${c.last_name || ''}`.trim().toLowerCase() : '';
+  };
+
+  const filteredSolicitudes = solicitudes
+    .filter(sol => {
+      const term = searchTerm.toLowerCase();
+      const areaName = (sol.area_nombre ? `${sol.area_nombre} #${sol.id}` : `Consulta #${sol.id}`).toLowerCase();
+      return areaName.includes(term);
+    })
+    .sort((a, b) => {
+      // Solicitud sort takes priority if active
+      if (solicitudSort === 'id') return a.id - b.id;
+      if (solicitudSort === 'fecha') {
+        const dateA = a.fecha_finalizacion_propuesta ? new Date(a.fecha_finalizacion_propuesta).getTime() : Infinity;
+        const dateB = b.fecha_finalizacion_propuesta ? new Date(b.fecha_finalizacion_propuesta).getTime() : Infinity;
+        return dateA - dateB;
+      }
+      // Otherwise use consultor sort
+      if (consultorSort === 'none') return 0;
+      const nameA = getConsultorName(a);
+      const nameB = getConsultorName(b);
+      return consultorSort === 'asc'
+        ? nameA.localeCompare(nameB, 'es')
+        : nameB.localeCompare(nameA, 'es');
+    });
 
   if (loading) {
     return (
@@ -290,14 +352,44 @@ export function Solicitudes() {
         <div className="xl:col-span-2 space-y-4">
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-[16px] font-semibold text-gray-900">Visitas Programadas</h2>
-            <div className="relative w-64">
-              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
-              <Input
-                placeholder="Buscar por laboratorio..."
-                className="pl-9 h-9 text-[13px]"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+            <div className="flex items-center gap-2">
+              <Button
+                variant={solicitudSort === 'none' ? 'outline' : 'default'}
+                size="sm"
+                onClick={toggleSolicitudSort}
+                className={`h-9 text-[13px] gap-1.5 transition-all ${solicitudSort === 'none'
+                  ? 'text-gray-600 border-gray-300 hover:bg-gray-50'
+                  : 'bg-[#003087] hover:bg-[#002366] text-white'
+                  }`}
+              >
+                {solicitudSort === 'none' && <ArrowUpDown className="w-3.5 h-3.5" />}
+                {solicitudSort === 'id' && <Hash className="w-3.5 h-3.5" />}
+                {solicitudSort === 'fecha' && <CalendarClock className="w-3.5 h-3.5" />}
+                {solicitudSort === 'none' ? 'Ordenar' : solicitudSort === 'id' ? 'Por ID' : 'Fecha próxima'}
+              </Button>
+              <Button
+                variant={consultorSort === 'none' ? 'outline' : 'default'}
+                size="sm"
+                onClick={toggleConsultorSort}
+                className={`h-9 text-[13px] gap-1.5 transition-all ${consultorSort === 'none'
+                  ? 'text-gray-600 border-gray-300 hover:bg-gray-50'
+                  : 'bg-[#003087] hover:bg-[#002366] text-white'
+                  }`}
+              >
+                {consultorSort === 'none' && <ArrowUpDown className="w-3.5 h-3.5" />}
+                {consultorSort === 'asc' && <ArrowUpAZ className="w-3.5 h-3.5" />}
+                {consultorSort === 'desc' && <ArrowDownAZ className="w-3.5 h-3.5" />}
+                Consultor
+              </Button>
+              <div className="relative w-64">
+                <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
+                <Input
+                  placeholder="Buscar por laboratorio..."
+                  className="pl-9 h-9 text-[13px]"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
             </div>
           </div>
 
@@ -342,9 +434,14 @@ export function Solicitudes() {
                       <Badge className={`${getEstadoBageColor(sol.estado)} text-white border-none shadow-none font-medium px-2 py-0.5 text-[11px]`}>
                         {getFriendlyEstado(sol.estado)}
                       </Badge>
-                      <Button variant="ghost" className="text-[13px] text-[#003087] h-8 px-3 hover:bg-blue-50">
-                        Ver Detalles
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" className="text-[13px] text-[#003087] h-8 px-3 hover:bg-blue-50">
+                          Ver Detalles
+                        </Button>
+                        <Button variant="ghost" className="text-[13px] text-red-600 h-8 px-2 hover:bg-red-50" onClick={() => handleDelete(sol.id)} title="Eliminar solicitud">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </Card>

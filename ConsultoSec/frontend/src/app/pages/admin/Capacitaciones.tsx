@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Calendar, 
-  MapPin, 
-  Users, 
-  Upload, 
-  X, 
+import {
+  Calendar,
+  MapPin,
+  Users,
+  Upload,
+  X,
   Plus,
   Trash2,
   FileText,
@@ -12,7 +12,8 @@ import {
   ChevronsUpDown,
   ClipboardCheck,
   File as FileIcon,
-  Image
+  Image,
+  Search
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../../../features/auth/AuthContext';
@@ -45,20 +46,20 @@ const ModalDescarga = ({ training, onClose }: { training: Training | null, onClo
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]" onClick={onClose}/>
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]" onClick={onClose} />
       <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[110] w-[480px] bg-white rounded-xl shadow-2xl">
         <div className="p-5 border-b flex justify-between items-center">
           <div>
             <h3 className="font-bold text-gray-800">Archivos adjuntos</h3>
             <p className="text-xs text-gray-500">{training.tema}</p>
           </div>
-          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-full text-gray-500"><X size={18}/></button>
+          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-full text-gray-500"><X size={18} /></button>
         </div>
 
         <div className="p-5 max-h-[60vh] overflow-y-auto space-y-4">
           {todos.length === 0 ? (
             <div className="text-center py-8 text-gray-400">
-              <FileText className="mx-auto mb-2" size={36}/>
+              <FileText className="mx-auto mb-2" size={36} />
               <p className="text-sm">Esta capacitación no tiene archivos adjuntos.</p>
             </div>
           ) : (
@@ -78,11 +79,11 @@ const ModalDescarga = ({ training, onClose }: { training: Training | null, onClo
                       >
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 bg-blue-100 rounded-md flex items-center justify-center">
-                            <FileIcon size={15} className="text-blue-600"/>
+                            <FileIcon size={15} className="text-blue-600" />
                           </div>
                           <span className="text-sm text-gray-700 group-hover:text-blue-700">{arch.nombre || arch.archivo.split('/').pop()}</span>
                         </div>
-                        <Upload size={14} className="text-gray-400 group-hover:text-blue-500 rotate-180"/>
+                        <Upload size={14} className="text-gray-400 group-hover:text-blue-500 rotate-180" />
                       </a>
                     ))}
                   </div>
@@ -104,11 +105,11 @@ const ModalDescarga = ({ training, onClose }: { training: Training | null, onClo
                       >
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 bg-green-100 rounded-md flex items-center justify-center">
-                            <Image size={15} className="text-green-600"/>
+                            <Image size={15} className="text-green-600" />
                           </div>
                           <span className="text-sm text-gray-700 group-hover:text-green-700">{arch.nombre || arch.archivo.split('/').pop()}</span>
                         </div>
-                        <Upload size={14} className="text-gray-400 group-hover:text-green-500 rotate-180"/>
+                        <Upload size={14} className="text-gray-400 group-hover:text-green-500 rotate-180" />
                       </a>
                     ))}
                   </div>
@@ -124,7 +125,7 @@ const ModalDescarga = ({ training, onClose }: { training: Training | null, onClo
               onClick={descargarTodos}
               className="w-full py-2 bg-[#003087] text-white rounded-md text-sm font-bold hover:bg-blue-800 transition-colors flex items-center justify-center gap-2"
             >
-              <Upload size={15} className="rotate-180"/> Descargar todos ({todos.length} archivos)
+              <Upload size={15} className="rotate-180" /> Descargar todos ({todos.length} archivos)
             </button>
           </div>
         )}
@@ -134,15 +135,15 @@ const ModalDescarga = ({ training, onClose }: { training: Training | null, onClo
 };
 
 // --- SUB-COMPONENTE: Tarjeta de Capacitación ---
-const TrainingCard = ({ 
-  training, 
+const TrainingCard = ({
+  training,
   onEdit,
   areas,
   consultas,
   usuarios,
   userRole
-}: { 
-  training: Training, 
+}: {
+  training: Training,
   onEdit: (t: Training) => void,
   areas: AreaLaboratorio[],
   consultas: Consulta[],
@@ -177,13 +178,13 @@ const TrainingCard = ({
             )}
           </div>
         </div>
-        
+
         <p className="text-sm text-gray-500 mb-4 line-clamp-2">{training.descripcion}</p>
-        
+
         <div className="flex flex-wrap gap-6 text-sm text-gray-600 mb-4">
-          <div className="flex items-center gap-2"><Calendar size={16} className="text-gray-400"/> {training.fecha}</div>
-          <div className="flex items-center gap-2"><MapPin size={16} className="text-gray-400"/> {labNames || 'Sin laboratorio asignado'}</div>
-          <div className="flex items-center gap-2"><Users size={16} className="text-gray-400"/> {training.asistentes.length} asistentes</div>
+          <div className="flex items-center gap-2"><Calendar size={16} className="text-gray-400" /> {training.fecha}</div>
+          <div className="flex items-center gap-2"><MapPin size={16} className="text-gray-400" /> {labNames || 'Sin laboratorio asignado'}</div>
+          <div className="flex items-center gap-2"><Users size={16} className="text-gray-400" /> {training.asistentes.length} asistentes</div>
         </div>
 
         {audNames && (
@@ -193,7 +194,7 @@ const TrainingCard = ({
         )}
 
         <div className="flex gap-3 border-t border-gray-50 pt-4">
-          <button 
+          <button
             onClick={() => onEdit(training)}
             className="px-4 py-1.5 bg-gray-900 text-white rounded text-sm font-semibold hover:bg-gray-800 transition-colors"
           >
@@ -203,41 +204,41 @@ const TrainingCard = ({
             onClick={() => setShowDescarga(true)}
             className="px-4 py-1.5 border border-gray-300 rounded text-sm font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-1.5"
           >
-            <Upload size={14} className="rotate-180"/>
+            <Upload size={14} className="rotate-180" />
             Descargar materiales{totalArchivos > 0 ? ` (${totalArchivos})` : ''}
           </button>
         </div>
       </div>
 
-      {showDescarga && <ModalDescarga training={training} onClose={() => setShowDescarga(false)}/>}
+      {showDescarga && <ModalDescarga training={training} onClose={() => setShowDescarga(false)} />}
     </>
   );
 };
 
 // --- SUB-COMPONENTE: Drawer de Registro ---
-const AddTrainingDrawer = ({ 
-  isOpen, 
-  onClose, 
-  onSave, 
+const AddTrainingDrawer = ({
+  isOpen,
+  onClose,
+  onSave,
   editingTraining,
   areas,
   consultas,
-  usuarios 
-}: { 
-  isOpen: boolean, 
-  onClose: () => void, 
+  usuarios
+}: {
+  isOpen: boolean,
+  onClose: () => void,
   onSave: (t: Partial<Training>) => void,
   editingTraining: Training | null,
   areas: AreaLaboratorio[],
   consultas: Consulta[],
   usuarios: Usuario[]
 }) => {
-  
+
   // Estados del formulario
   const [tema, setTema] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0]);
-  
+
   const [selectedLabs, setSelectedLabs] = useState<number[]>([]);
   const [selectedAuditorias, setSelectedAuditorias] = useState<number[]>([]);
   const [selectedAsistentes, setSelectedAsistentes] = useState<number[]>([]);
@@ -316,14 +317,14 @@ const AddTrainingDrawer = ({
   return (
     <>
       {isOpen && <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]" onClick={onClose} />}
-      
+
       <div className={`fixed inset-y-0 right-0 w-[550px] bg-white shadow-2xl z-[70] transform ${isOpen ? 'translate-x-0' : 'translate-x-full'} transition-transform duration-300 ease-in-out flex flex-col text-left`}>
         <div className="p-6 border-b flex justify-between items-center bg-gray-50">
           <div>
             <h2 className="text-xl font-bold text-gray-800">{editingTraining ? 'Editar' : 'Registrar'} Capacitación</h2>
             <p className="text-xs text-gray-500">Completa la información detallada abajo.</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full text-gray-500"><X size={20}/></button>
+          <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full text-gray-500"><X size={20} /></button>
         </div>
 
         <div className="flex-grow overflow-y-auto p-6 space-y-5">
@@ -331,20 +332,20 @@ const AddTrainingDrawer = ({
           <div className="space-y-4 bg-blue-50/50 p-4 rounded-lg border border-blue-100">
             <div className="space-y-1">
               <label className="text-sm font-semibold text-gray-700 block">Título / Tema</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={tema}
                 onChange={(e) => setTema(e.target.value)}
-                placeholder="Ej. Uso de equipo de protección" 
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" 
+                placeholder="Ej. Uso de equipo de protección"
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
             <div className="space-y-1">
               <label className="text-sm font-semibold text-gray-700 block">Descripción / Objetivo</label>
-              <textarea 
+              <textarea
                 value={descripcion}
                 onChange={(e) => setDescripcion(e.target.value)}
-                placeholder="Describe brevemente de qué trata la sesión..." 
+                placeholder="Describe brevemente de qué trata la sesión..."
                 className="w-full p-2 border border-gray-300 rounded-md h-20 text-sm outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -357,10 +358,10 @@ const AddTrainingDrawer = ({
             </div>
             <div className="space-y-1">
               <label className="text-sm font-semibold text-gray-700 block">Responsable (Instructor)</label>
-              <input 
-                type="text" 
-                value={responsable} 
-                onChange={(e) => setResponsable(e.target.value)} 
+              <input
+                type="text"
+                value={responsable}
+                onChange={(e) => setResponsable(e.target.value)}
                 className="w-full p-2 border border-gray-300 rounded-md text-sm outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Nombre del instructor"
               />
@@ -453,7 +454,7 @@ const AddTrainingDrawer = ({
             <Popover open={openAsistentes} onOpenChange={setOpenAsistentes}>
               <PopoverTrigger asChild>
                 <Button variant="outline" role="combobox" aria-expanded={openAsistentes} className="w-full justify-between font-normal text-left">
-                  <span className="flex items-center gap-2 text-[#003087] font-medium"><Plus size={16}/> Agregar asistentes (Consultores)</span>
+                  <span className="flex items-center gap-2 text-[#003087] font-medium"><Plus size={16} /> Agregar asistentes (Consultores)</span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[450px] p-0" style={{ zIndex: 80 }}>
@@ -503,8 +504,8 @@ const AddTrainingDrawer = ({
                     <div key={arch.id} className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-md px-3 py-1.5 text-sm">
                       <div className="flex items-center gap-2 text-gray-700">
                         {arch.tipo === 'material'
-                          ? <FileIcon size={14} className="text-blue-500"/>
-                          : <Image size={14} className="text-green-500"/>}
+                          ? <FileIcon size={14} className="text-blue-500" />
+                          : <Image size={14} className="text-green-500" />}
                         <a href={arch.archivo} target="_blank" rel="noreferrer" className="hover:underline text-[#003087]">
                           {arch.nombre || arch.archivo.split('/').pop()}
                         </a>
@@ -515,7 +516,7 @@ const AddTrainingDrawer = ({
                         onClick={() => setArchivosAEliminar([...archivosAEliminar, arch.id])}
                         className="text-red-400 hover:text-red-600 p-1"
                       >
-                        <X size={14}/>
+                        <X size={14} />
                       </button>
                     </div>
                   ))}
@@ -538,7 +539,7 @@ const AddTrainingDrawer = ({
                   onClick={() => materialInputRef.current?.click()}
                   className="w-full border-2 border-dashed border-gray-200 rounded-lg p-4 text-center bg-gray-50 hover:border-blue-300 hover:bg-blue-50 transition-colors group"
                 >
-                  <Upload className="mx-auto text-gray-400 group-hover:text-blue-400 mb-1" size={20}/>
+                  <Upload className="mx-auto text-gray-400 group-hover:text-blue-400 mb-1" size={20} />
                   <p className="text-[10px] text-gray-600 font-medium">Materiales PDF/PPT</p>
                   <p className="text-[9px] text-gray-400 mt-0.5">Haz clic para seleccionar</p>
                 </button>
@@ -547,7 +548,7 @@ const AddTrainingDrawer = ({
                     {materialesNuevos.map((f, i) => (
                       <div key={i} className="flex items-center justify-between text-xs bg-blue-50 rounded px-2 py-1">
                         <span className="truncate text-blue-700">{f.name}</span>
-                        <button type="button" onClick={() => setMaterialesNuevos(materialesNuevos.filter((_, idx) => idx !== i))} className="ml-1 text-red-400 hover:text-red-600"><X size={11}/></button>
+                        <button type="button" onClick={() => setMaterialesNuevos(materialesNuevos.filter((_, idx) => idx !== i))} className="ml-1 text-red-400 hover:text-red-600"><X size={11} /></button>
                       </div>
                     ))}
                   </div>
@@ -569,7 +570,7 @@ const AddTrainingDrawer = ({
                   onClick={() => evidenciaInputRef.current?.click()}
                   className="w-full border-2 border-dashed border-gray-200 rounded-lg p-4 text-center bg-gray-50 hover:border-green-300 hover:bg-green-50 transition-colors group"
                 >
-                  <Upload className="mx-auto text-gray-400 group-hover:text-green-400 mb-1" size={20}/>
+                  <Upload className="mx-auto text-gray-400 group-hover:text-green-400 mb-1" size={20} />
                   <p className="text-[10px] text-gray-600 font-medium">Fotos Evidencia</p>
                   <p className="text-[9px] text-gray-400 mt-0.5">Imágenes (JPG, PNG...)</p>
                 </button>
@@ -578,7 +579,7 @@ const AddTrainingDrawer = ({
                     {evidenciasNuevas.map((f, i) => (
                       <div key={i} className="flex items-center justify-between text-xs bg-green-50 rounded px-2 py-1">
                         <span className="truncate text-green-700">{f.name}</span>
-                        <button type="button" onClick={() => setEvidenciasNuevas(evidenciasNuevas.filter((_, idx) => idx !== i))} className="ml-1 text-red-400 hover:text-red-600"><X size={11}/></button>
+                        <button type="button" onClick={() => setEvidenciasNuevas(evidenciasNuevas.filter((_, idx) => idx !== i))} className="ml-1 text-red-400 hover:text-red-600"><X size={11} /></button>
                       </div>
                     ))}
                   </div>
@@ -593,7 +594,7 @@ const AddTrainingDrawer = ({
           <button onClick={onClose} className="flex-1 py-2.5 border border-gray-300 rounded-md font-bold text-gray-700 hover:bg-gray-100">
             Cancelar
           </button>
-          <button 
+          <button
             onClick={handleGuardar}
             className="flex-1 py-2.5 bg-[#003087] text-white rounded-md font-bold hover:bg-blue-800 shadow-lg"
           >
@@ -606,17 +607,18 @@ const AddTrainingDrawer = ({
 };
 
 // --- COMPONENTE PRINCIPAL ---
-export const Capacitaciones = () => {
+export const CapacitacionesAdmin = () => {
   const { token, user, isLoading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
-  
+
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [editingTraining, setEditingTraining] = useState<Training | null>(null);
-  
+
   const [trainings, setTrainings] = useState<Training[]>([]);
   const [areas, setAreas] = useState<AreaLaboratorio[]>([]);
   const [consultas, setConsultas] = useState<Consulta[]>([]);
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     // Esperar a que la autenticación termine antes de intentar cargar datos
@@ -726,38 +728,78 @@ export const Capacitaciones = () => {
           <h2 className="text-2xl font-bold text-gray-800">Capacitaciones registradas</h2>
           <p className="text-gray-500 text-sm">Registro dinámico de sesiones vinculadas a las auditorías y laboratorios.</p>
         </div>
-        <button 
+        <button
           onClick={handleOpenNew}
           className="bg-[#003087] hover:bg-blue-800 text-white px-6 py-2.5 rounded-md flex items-center gap-2 shadow-md font-semibold"
         >
-          <Plus size={20}/> Nueva capacitación
+          <Plus size={20} /> Nueva capacitación
         </button>
       </header>
 
+      {/* Barra de búsqueda */}
+      <div className="max-w-5xl mb-6">
+        <div className="relative">
+          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+          <input
+            type="text"
+            placeholder="Buscar por título o nombre de consultor asistente..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 border border-gray-400 rounded-lg text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/30 focus:border-[#003087] transition-all"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+      </div>
+
       <div className="max-w-5xl space-y-5">
-        {trainings.length === 0 ? (
-          <div className="bg-white p-20 rounded-xl border-2 border-dashed border-gray-200 text-center">
-            <ClipboardCheck className="mx-auto text-gray-300 mb-4" size={48} />
-            <p className="text-gray-500 font-medium">No hay capacitaciones registradas todavía.</p>
-          </div>
-        ) : (
-          trainings.map((t) => (
-            <TrainingCard 
-              key={t.id} 
-              training={t} 
-              onEdit={handleOpenEdit} 
+        {(() => {
+          const filtered = trainings.filter(t => {
+            const term = searchTerm.toLowerCase();
+            if (!term) return true;
+            // Buscar por título
+            if (t.tema.toLowerCase().includes(term)) return true;
+            // Buscar por nombre de asistentes
+            return t.asistentes.some(asId => {
+              const u = usuarios.find(u => u.id === asId);
+              if (!u) return false;
+              const fullName = `${u.first_name || ''} ${u.last_name || ''} ${u.username}`.toLowerCase();
+              return fullName.includes(term);
+            });
+          });
+
+          if (filtered.length === 0) return (
+            <div className="bg-white p-20 rounded-xl border-2 border-dashed border-gray-200 text-center">
+              <ClipboardCheck className="mx-auto text-gray-300 mb-4" size={48} />
+              <p className="text-gray-500 font-medium">
+                {searchTerm ? 'No se encontraron capacitaciones con esa búsqueda.' : 'No hay capacitaciones registradas todavía.'}
+              </p>
+            </div>
+          );
+
+          return filtered.map((t) => (
+            <TrainingCard
+              key={t.id}
+              training={t}
+              onEdit={handleOpenEdit}
               areas={areas}
               consultas={consultas}
               usuarios={usuarios}
               userRole={user?.role}
             />
-          ))
-        )}
+          ));
+        })()}
       </div>
 
-      <AddTrainingDrawer 
-        isOpen={isDrawerOpen} 
-        onClose={() => setIsDrawerOpen(false)} 
+      <AddTrainingDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
         onSave={handleSaveTraining}
         editingTraining={editingTraining}
         areas={areas}
@@ -765,5 +807,7 @@ export const Capacitaciones = () => {
         usuarios={usuarios}
       />
     </div>
+
+
   );
 };
