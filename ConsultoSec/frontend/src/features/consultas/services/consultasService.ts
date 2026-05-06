@@ -88,6 +88,7 @@ export const consultasService = {
   async obtenerConsultas(token: string): Promise<Consulta[]> {
     const response = await fetch(`${API_URL}/solicitudes/`, {
       method: "GET",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
@@ -104,6 +105,7 @@ export const consultasService = {
   async obtenerConsulta(token: string, id: number): Promise<Consulta> {
     const response = await fetch(`${API_URL}/solicitudes/${id}/`, {
       method: "GET",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
@@ -120,6 +122,7 @@ export const consultasService = {
   async actualizarConsulta(token: string, id: number, data: Partial<Consulta>): Promise<Consulta> {
     const response = await fetch(`${API_URL}/solicitudes/${id}/`, {
       method: "PATCH",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
@@ -133,6 +136,7 @@ export const consultasService = {
   async actualizarChecklistItem(token: string, id: number, data: Partial<ChecklistItem>): Promise<ChecklistItem> {
     const response = await fetch(`${API_URL}/checklists/${id}/`, {
       method: "PATCH",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
@@ -146,6 +150,7 @@ export const consultasService = {
   async obtenerAreas(token: string): Promise<AreaLaboratorio[]> {
     const response = await fetch(`${API_URL}/areas-laboratorio/`, {
       method: "GET",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
@@ -158,6 +163,7 @@ export const consultasService = {
   async obtenerConsultores(token: string): Promise<Usuario[]> {
     const response = await fetch(`${API_URL}/users/consultores/`, {
       method: "GET",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
@@ -170,6 +176,7 @@ export const consultasService = {
   async crearConsulta(token: string, data: Partial<Consulta>): Promise<Consulta> {
     const response = await fetch(`${API_URL}/solicitudes/`, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
@@ -183,6 +190,7 @@ export const consultasService = {
   async obtenerCapacitaciones(token: string): Promise<Training[]> {
     const response = await fetch(`${API_URL}/capacitaciones/`, {
       method: "GET",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
@@ -195,6 +203,7 @@ export const consultasService = {
   async crearCapacitacion(token: string, data: Partial<Training>): Promise<Training> {
     const response = await fetch(`${API_URL}/capacitaciones/`, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
@@ -213,6 +222,7 @@ export const consultasService = {
   async actualizarCapacitacion(token: string, id: number, data: Partial<Training>): Promise<Training> {
     const response = await fetch(`${API_URL}/capacitaciones/${id}/`, {
       method: "PATCH",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
@@ -242,6 +252,7 @@ export const consultasService = {
 
     const response = await fetch(`${API_URL}/capacitacion-archivos/`, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Authorization": `Bearer ${token}`
       },
@@ -254,6 +265,7 @@ export const consultasService = {
   async eliminarArchivoCapacitacion(token: string, archivoId: number): Promise<void> {
     const response = await fetch(`${API_URL}/capacitacion-archivos/${archivoId}/`, {
       method: "DELETE",
+      credentials: "include",
       headers: {
         "Authorization": `Bearer ${token}`
       },
@@ -264,6 +276,7 @@ export const consultasService = {
   async obtenerPropuestas(token: string, consultaId: number): Promise<PropuestaMejora[]> {
     const response = await fetch(`${API_URL}/propuestas/?consulta=${consultaId}`, {
       method: "GET",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
@@ -276,6 +289,7 @@ export const consultasService = {
   async crearPropuesta(token: string, data: Partial<PropuestaMejora>): Promise<PropuestaMejora> {
     const response = await fetch(`${API_URL}/propuestas/`, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
@@ -289,6 +303,7 @@ export const consultasService = {
   async actualizarPropuesta(token: string, id: number, data: Partial<PropuestaMejora>): Promise<PropuestaMejora> {
     const response = await fetch(`${API_URL}/propuestas/${id}/`, {
       method: "PATCH",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
@@ -302,6 +317,7 @@ export const consultasService = {
   async eliminarPropuesta(token: string, id: number): Promise<void> {
     const response = await fetch(`${API_URL}/propuestas/${id}/`, {
       method: "DELETE",
+      credentials: "include",
       headers: {
         "Authorization": `Bearer ${token}`
       },
@@ -323,6 +339,7 @@ export const consultasService = {
   async eliminarConsulta(token: string, id: number): Promise<void> {
     const response = await fetch(`${API_URL}/solicitudes/${id}/eliminar/`, {
       method: "PATCH",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`

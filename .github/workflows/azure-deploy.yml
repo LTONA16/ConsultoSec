@@ -39,7 +39,7 @@ jobs:
       - name: Construir y subir imagen Docker
         run: |
           IMAGE_LOWER=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
-          
+          echo "IMAGE_LOWER=$IMAGE_LOWER" >> $GITHUB_ENV
           cd ${{ env.BACKEND_DIR }}
           docker build . -t $IMAGE_LOWER:latest -t $IMAGE_LOWER:${{ github.sha }}
           docker push $IMAGE_LOWER --all-tags
@@ -47,6 +47,6 @@ jobs:
       - name: Desplegar en Azure Web App for Containers
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'consultosec' 
+          app-name: 'consultosec'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          images: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          images: ${{ env.IMAGE_LOWER }}:${{ github.sha }}
