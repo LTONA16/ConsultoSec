@@ -6,7 +6,9 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
 RUN apt-get update \
-    && apt-get install -y gcc libpq-dev bash \
+    && apt-get install -y --no-install-recommends gcc libpq-dev bash \
+       libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz0b libcairo2 \
+       libffi-dev libgdk-pixbuf2.0-0 shared-mime-info \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
