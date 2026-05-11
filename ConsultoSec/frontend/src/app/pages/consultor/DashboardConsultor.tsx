@@ -4,8 +4,9 @@ import { Card } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { ClipboardList, Clock, AlertCircle, Wrench, ChevronRight } from 'lucide-react';
-import { consultasService, Consulta } from '../../../features/consultas/services/consultasService';
+import { consultasService, Consulta, Usuario } from '../../../features/consultas/services/consultasService';
 import { useAuth } from '../../../features/auth/AuthContext';
+import { ConsultaDetalleModal } from '../../../features/consultas/components/ConsultaDetalleModal';
 
 const getEstadoInfo = (estado: string) => {
   switch (estado) {
@@ -31,12 +32,18 @@ export function DashboardConsultor() {
   const navigate = useNavigate();
   const { token } = useAuth();
   const [consultas, setConsultas] = useState<Consulta[]>([]);
+  const [consultores, setConsultores] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedAudit, setSelectedAudit] = useState<Consulta | null>(null);
 
   useEffect(() => {
     if (token) {
-      consultasService.obtenerConsultas(token).then((data) => {
+      Promise.all([
+        consultasService.obtenerConsultas(token),
+        consultasService.obtenerConsultores(token).catch(() => [])
+      ]).then(([data, consultoresData]) => {
         setConsultas(data);
+        setConsultores(consultoresData);
         setLoading(false);
       }).catch(err => {
         console.error("Error al cargar consultas:", err);
@@ -49,8 +56,12 @@ export function DashboardConsultor() {
     if (isChecklist) {
       navigate(`/consultor/checklist?id=${audit.id}&lab=${encodeURIComponent(audit.area_nombre || 'General')}`);
     } else {
-      alert(`Navegar al seguimiento de ${audit.area_nombre ? `${audit.area_nombre} #${audit.id}` : `Consulta #${audit.id}`}`);
+      navigate(`/consultor/seguimiento?id=${audit.id}&lab=${encodeURIComponent(audit.area_nombre || 'General')}`);
     }
+  };
+
+  const openDetalle = (audit: Consulta) => {
+    setSelectedAudit(audit);
   };
 
   const kpis = [
@@ -163,7 +174,7 @@ export function DashboardConsultor() {
                     </div>
 
                     <Button 
-                      onClick={() => handleAccion(audit, info.isChecklist)}
+                      onClick={() => audit.estado === 'agendada' || audit.estado === 'cancelada' || audit.estado === 'finalizada' ? openDetalle(audit) : handleAccion(audit, info.isChecklist)}
                       className="w-full md:w-auto bg-white border border-[#E8E8E8] text-gray-700 hover:bg-gray-50 hover:text-[#003087] shadow-sm text-[13px]"
                     >
                       {info.accion}<ChevronRight className="w-4 h-4 ml-1" />
@@ -202,6 +213,16 @@ export function DashboardConsultor() {
           </Card>
         </div>
       </div>
+      
+      <ConsultaDetalleModal 
+        selectedAudit={selectedAudit} 
+        onClose={() => setSelectedAudit(null)} 
+        onAction={(audit) => {
+          setSelectedAudit(null);
+          handleAccion(audit, getEstadoInfo(audit.estado).isChecklist);
+        }}
+        consultores={consultores}
+      />
     </div>
   );
 }

@@ -3,8 +3,9 @@ import { Card } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { AlertCircle, CheckCircle2, TrendingUp, Clock, ClipboardList } from 'lucide-react';
-import { consultasService, Consulta } from '../../../features/consultas/services/consultasService';
+import { consultasService, Consulta, Usuario } from '../../../features/consultas/services/consultasService';
 import { useAuth } from '../../../features/auth/AuthContext';
+import { ConsultaDetalleModal } from '../../../features/consultas/components/ConsultaDetalleModal';
 
 const getEstadoInfo = (estado: string) => {
   switch (estado) {
@@ -23,14 +24,20 @@ const getEstadoInfo = (estado: string) => {
 export function DashboardAdmin() {
   const { token } = useAuth();
   const [consultas, setConsultas] = useState<Consulta[]>([]);
+  const [consultores, setConsultores] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedAudit, setSelectedAudit] = useState<Consulta | null>(null);
 
   useEffect(() => {
     if (token) {
-      consultasService.obtenerConsultas(token).then((data) => {
+      Promise.all([
+        consultasService.obtenerConsultas(token),
+        consultasService.obtenerConsultores(token).catch(() => [])
+      ]).then(([data, consultoresData]) => {
         // Ordenamos las consultas más recientes primero
         const ordenadas = data.sort((a, b) => new Date(b.fecha_actualizacion || b.fecha_creacion).getTime() - new Date(a.fecha_actualizacion || a.fecha_creacion).getTime());
         setConsultas(ordenadas);
+        setConsultores(consultoresData);
         setLoading(false);
       }).catch(err => {
         console.error("Error al cargar consultas:", err);
@@ -68,6 +75,7 @@ export function DashboardAdmin() {
     const info = getEstadoInfo(c.estado);
     const dateStr = new Date(c.fecha_creacion).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
     return {
+      audit: c,
       id: c.id,
       name: c.area_nombre ? `${c.area_nombre} #${c.id}` : `Auditoría #${c.id}`,
       lastAudit: dateStr,
@@ -159,6 +167,7 @@ export function DashboardAdmin() {
                   </Badge>
                   <Button
                     variant="outline"
+                    onClick={() => setSelectedAudit(lab.audit)}
                     className="w-full text-[13px] border-[#E8E8E8] text-gray-700 hover:bg-[#F5F5F5] shadow-sm mt-2"
                   >
                     Ver detalle
@@ -199,6 +208,13 @@ export function DashboardAdmin() {
           </Card>
         </div>
       )}
+
+      <ConsultaDetalleModal 
+        selectedAudit={selectedAudit} 
+        onClose={() => setSelectedAudit(null)} 
+        isAdmin={true}
+        consultores={consultores}
+      />
     </div>
   );
 }

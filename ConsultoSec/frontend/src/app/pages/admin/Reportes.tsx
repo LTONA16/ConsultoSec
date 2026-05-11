@@ -62,7 +62,7 @@ export const Reportes = () => {
     } catch (error) {
       console.error(error);
       toast.dismiss(loadingToast);
-      toast.error("El reporte solo está disponible para auditorías finalizadas.");
+      toast.error(error instanceof Error ? error.message : "Error al descargar el PDF. Contacta al administrador.");
     }
   };
 
@@ -207,8 +207,9 @@ export const Reportes = () => {
                     <td className="px-6 py-4 text-right">
                       <Button 
                         size="sm"
-                        className="bg-[#003087] hover:bg-blue-800 text-white gap-2 text-xs"
-                        onClick={() => handleDownloadPDF(c.id, c.area_nombre || 'Auditoria')}
+                        className={`gap-2 text-xs ${c.estado === 'finalizada' ? 'bg-[#003087] hover:bg-blue-800 text-white' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}
+                        onClick={() => c.estado === 'finalizada' && handleDownloadPDF(c.id, c.area_nombre || 'Auditoria')}
+                        disabled={c.estado !== 'finalizada'}
                       >
                         <Download size={14} />
                         Reporte PDF
