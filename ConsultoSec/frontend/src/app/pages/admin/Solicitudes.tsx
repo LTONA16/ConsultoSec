@@ -7,11 +7,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Badge } from '../../components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '../../components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../../components/ui/command';
-import { Calendar as CalendarIcon, UserPlus, ClipboardCheck, Search, Loader2, X, Check, ChevronsUpDown, ArrowUpDown, ArrowUpAZ, ArrowDownAZ, Hash, CalendarClock, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../components/ui/dialog';
+import { Calendar as CalendarIcon, UserPlus, ClipboardCheck, Search, Loader2, X, Check, ChevronsUpDown, ArrowUpDown, ArrowUpAZ, ArrowDownAZ, Hash, CalendarClock, Trash2, Eye, AlertTriangle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../../../features/auth/AuthContext';
 import { consultasService, Consulta, AreaLaboratorio, Usuario } from '../../../features/consultas/services/consultasService';
-
+import { ConsultaDetalleModal } from '../../../features/consultas/components/ConsultaDetalleModal';
 const getEstadoBageColor = (estado: string) => {
   switch (estado) {
     case 'agendada': return 'bg-gray-500';
@@ -58,6 +59,11 @@ export function Solicitudes() {
   const [fechaPropuesta, setFechaPropuesta] = useState<string>('');
   const [selectedConsultores, setSelectedConsultores] = useState<Usuario[]>([]);
   const [openCombobox, setOpenCombobox] = useState(false);
+
+  // Modal State
+  const [selectedAudit, setSelectedAudit] = useState<Consulta | null>(null);
+  const [confirmandoId, setConfirmandoId] = useState<number | null>(null);
+  const [rechazando, setRechazando] = useState(false);
 
   useEffect(() => {
     if (token) {
@@ -163,24 +169,27 @@ export function Solicitudes() {
     });
   };
 
-  const handleDelete = async (id: number) => {
-    if (confirm("¿Estás seguro de que deseas eliminar esta solicitud?")) {
-      try {
-        await consultasService.eliminarConsulta(token!, id);
-        setSolicitudes(solicitudes.filter(s => s.id !== id));
-        toast.success("Solicitud eliminada", {
-          description: <span style={{ color: '#4b5563' }}>La solicitud ha sido eliminada correctamente.</span>,
-          position: 'top-right',
-          classNames: { title: 'text-slate-900', description: 'text-slate-600 font-medium' }
-        });
-      } catch (error) {
-        console.error("Error al eliminar la solicitud:", error);
-        toast.error("Error", {
-          description: <span style={{ color: '#4b5563' }}>Hubo un problema al eliminar la solicitud.</span>,
-          position: 'top-right',
-          classNames: { title: 'text-slate-900', description: 'text-slate-600 font-medium' }
-        });
-      }
+  const handleConfirmDelete = async (id: number) => {
+    setRechazando(true);
+    try {
+      await consultasService.eliminarConsulta(token!, id);
+      setSolicitudes(prev => prev.filter(s => s.id !== id));
+      setConfirmandoId(null);
+      setSelectedAudit(null);
+      toast.success("Solicitud eliminada", {
+        description: <span style={{ color: '#4b5563' }}>La solicitud ha sido eliminada correctamente.</span>,
+        position: 'top-right',
+        classNames: { title: 'text-slate-900', description: 'text-slate-600 font-medium' }
+      });
+    } catch (error) {
+      console.error("Error al eliminar la solicitud:", error);
+      toast.error("Error", {
+        description: <span style={{ color: '#4b5563' }}>Hubo un problema al eliminar la solicitud.</span>,
+        position: 'top-right',
+        classNames: { title: 'text-slate-900', description: 'text-slate-600 font-medium' }
+      });
+    } finally {
+      setRechazando(false);
     }
   };
 
@@ -410,38 +419,49 @@ export function Solicitudes() {
                 : new Date(sol.fecha_creacion).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
 
               return (
-                <Card key={sol.id} className="p-5 border border-[#E8E8E8] hover:shadow-sm transition-shadow bg-white">
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-3">
-                      <div>
+                <Card key={sol.id} className="p-6 border border-[#E8E8E8] hover:shadow-md transition-all bg-white">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="space-y-2 flex-1">
+                      <div className="flex items-center gap-3">
                         <span className="text-[11px] font-bold text-[#003087] uppercase tracking-wider">SOL-{sol.id.toString().padStart(3, '0')}</span>
-                        <h3 className="text-[16px] font-bold text-gray-900 mt-0.5">{sol.area_nombre ? `${sol.area_nombre} #${sol.id}` : `Auditoría #${sol.id}`}</h3>
+                        <h3 className="text-[18px] font-bold text-gray-900">{sol.area_nombre ? `${sol.area_nombre} #${sol.id}` : `Auditoría #${sol.id}`}</h3>
+                        <Badge className={`${getEstadoBageColor(sol.estado)} text-white border-none shadow-none font-medium px-2 py-0.5 text-[11px]`}>
+                          {getFriendlyEstado(sol.estado)}
+                        </Badge>
                       </div>
 
-                      <div className="flex flex-wrap gap-4 text-[13px] text-gray-600">
+                      <div className="flex flex-wrap gap-4 text-[13px] text-gray-600 font-medium mt-1">
                         <div className="flex items-center gap-1.5">
                           <CalendarIcon className="w-4 h-4 text-gray-400" />
-                          {dateToShow}
+                          Fecha: {dateToShow}
                         </div>
                         <div className="flex items-center gap-1.5">
                           <UserPlus className="w-4 h-4 text-gray-400" />
-                          {respNames}
+                          Responsables: {respNames}
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex flex-col items-end gap-3">
-                      <Badge className={`${getEstadoBageColor(sol.estado)} text-white border-none shadow-none font-medium px-2 py-0.5 text-[11px]`}>
-                        {getFriendlyEstado(sol.estado)}
-                      </Badge>
-                      <div className="flex gap-2">
-                        <Button variant="ghost" className="text-[13px] text-[#003087] h-8 px-3 hover:bg-blue-50">
-                          Ver Detalles
-                        </Button>
-                        <Button variant="ghost" className="text-[13px] text-red-600 h-8 px-2 hover:bg-red-50" onClick={() => handleDelete(sol.id)} title="Eliminar solicitud">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
+                    <div className="flex gap-3 shrink-0">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-gray-200 text-gray-700 hover:bg-gray-50 gap-2 font-semibold"
+                        onClick={() => setSelectedAudit(sol)}
+                      >
+                        <Eye className="w-4 h-4 text-gray-400" />
+                        Ver detalles
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 gap-2 font-semibold"
+                        onClick={() => setConfirmandoId(sol.id)}
+                        title="Eliminar solicitud"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                        Eliminar
+                      </Button>
                     </div>
                   </div>
                 </Card>
@@ -457,6 +477,56 @@ export function Solicitudes() {
           </div>
         </div>
       </div>
+
+      <ConsultaDetalleModal 
+        selectedAudit={selectedAudit} 
+        onClose={() => setSelectedAudit(null)} 
+        onDeleteRequest={(id) => setConfirmandoId(id)}
+        confirmandoId={confirmandoId}
+        rechazando={rechazando}
+        onConfirmDelete={handleConfirmDelete}
+        onCancelDelete={() => setConfirmandoId(null)}
+        consultores={consultores}
+        isAdmin={true}
+      />
+
+      <Dialog open={confirmandoId !== null && selectedAudit === null} onOpenChange={(open) => !open && setConfirmandoId(null)}>
+        <DialogContent className="sm:max-w-md bg-white border-none shadow-2xl rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl font-bold text-gray-900">
+              <div className="w-10 h-10 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              Confirmar Eliminación
+            </DialogTitle>
+            <DialogDescription className="text-[14px] text-gray-600 mt-3 pt-2">
+              ¿Estás totalmente seguro de eliminar esta solicitud de auditoría? Esta acción no se puede deshacer de forma sencilla y se eliminará de la lista permanentemente.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-6 flex gap-3 sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setConfirmandoId(null)}
+              disabled={rechazando}
+              className="text-gray-600 border-gray-300 font-semibold"
+            >
+              Mejor no, regresar
+            </Button>
+            <Button
+              className="bg-red-600 hover:bg-red-700 text-white font-bold gap-2"
+              onClick={() => confirmandoId && handleConfirmDelete(confirmandoId)}
+              disabled={rechazando}
+            >
+              {rechazando ? (
+                <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white inline-block" />
+              ) : (
+                <Trash2 className="w-4 h-4" />
+              )}
+              Sí, eliminar definitivamente
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

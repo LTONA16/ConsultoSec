@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { AlertCircle, CheckCircle2, TrendingUp, Clock, ClipboardList } from 'lucide-react';
+import { AlertCircle, CheckCircle2, TrendingUp, Clock, ClipboardList, Monitor, FlaskConical, Cog, HeartPulse, Microscope, Users, User, Hammer, Droplets, Cpu, Factory, Zap } from 'lucide-react';
 import { consultasService, Consulta, Usuario } from '../../../features/consultas/services/consultasService';
 import { useAuth } from '../../../features/auth/AuthContext';
 import { ConsultaDetalleModal } from '../../../features/consultas/components/ConsultaDetalleModal';
@@ -19,6 +19,26 @@ const getEstadoInfo = (estado: string) => {
     case 'cancelada': return { label: 'Cancelada', statusColor: 'bg-gray-800' };
     default: return { label: estado, statusColor: 'bg-gray-500' };
   }
+};
+
+const getLabIconAndColor = (areaName: string | undefined) => {
+  if (!areaName) return { icon: ClipboardList, color: '#6B7280' };
+  const name = areaName.toLowerCase();
+
+  if (name.includes('carpintería')) return { icon: Hammer, color: '#8B4513' };
+  if (name.includes('lavado')) return { icon: Droplets, color: '#0EA5E9' };
+  if (name.includes('mecatrónica')) return { icon: Cpu, color: '#8B5CF6' };
+  if (name.includes('manufactura')) return { icon: Factory, color: '#F59E0B' };
+  if (name.includes('electrica') || name.includes('eléctrica')) return { icon: Zap, color: '#EAB308' };
+
+  if (name.includes('cómputo') || name.includes('sistemas') || name.includes('redes') || name.includes('informátic')) return { icon: Monitor, color: '#3B82F6' };
+  if (name.includes('químic') || name.includes('biolog') || name.includes('clínic') || name.includes('alimento') || name.includes('físic')) return { icon: FlaskConical, color: '#10B981' };
+  if (name.includes('mecánic') || name.includes('civil')) return { icon: Cog, color: '#F59E0B' };
+  if (name.includes('salud') || name.includes('enfermería') || name.includes('medicina') || name.includes('deporte')) return { icon: HeartPulse, color: '#EF4444' };
+
+  const colors = ['#8B5CF6', '#EC4899', '#14B8A6', '#F97316', '#6366F1'];
+  const colorIndex = name.length % colors.length;
+  return { icon: Microscope, color: colors[colorIndex] };
 };
 
 export function DashboardAdmin() {
@@ -74,13 +94,30 @@ export function DashboardAdmin() {
   const labs = consultas.slice(0, 8).map(c => {
     const info = getEstadoInfo(c.estado);
     const dateStr = new Date(c.fecha_creacion).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+
+    const respCount = c.responsables ? c.responsables.length : 0;
+    let respText = 'Sin asignar';
+    if (respCount === 1) {
+      const cons = consultores.find(u => u.id === c.responsables[0]);
+      respText = cons ? `${cons.first_name || cons.username} ${cons.last_name || ''}`.trim() : `Usuario #${c.responsables[0]}`;
+    } else if (respCount > 1) {
+      respText = `${respCount} consultores asignados`;
+    }
+
+    const labStyle = getLabIconAndColor(c.area_nombre);
+
     return {
       audit: c,
       id: c.id,
-      name: c.area_nombre ? `${c.area_nombre} #${c.id}` : `Auditoría #${c.id}`,
+      name: c.area_nombre ? c.area_nombre : `Auditoría #${c.id}`,
+      auditNumber: `AUD-${c.id.toString().padStart(3, '0')}`,
       lastAudit: dateStr,
       status: info.label,
       statusColor: info.statusColor,
+      respText,
+      respCount,
+      icon: labStyle.icon,
+      color: labStyle.color,
     };
   });
 
@@ -151,30 +188,54 @@ export function DashboardAdmin() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {labs.map((lab) => (
-              <Card key={lab.id} className="p-6 border border-[#E8E8E8] hover:border-gray-300 transition-colors bg-white">
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-[16px] font-medium text-gray-900 truncate">
-                      {lab.name}
-                    </h3>
-                    <p className="text-[14px] text-gray-500 mt-1">
-                      Última auditoría: <span className="font-medium">{lab.lastAudit}</span>
-                    </p>
+            {labs.map((lab) => {
+              const Icon = lab.icon;
+              return (
+                <Card key={lab.id} className="p-6 border border-[#E8E8E8] hover:border-gray-300 transition-colors bg-white">
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <div
+                        className="w-10 h-10 shrink-0 rounded-lg flex items-center justify-center shadow-sm mt-0.5"
+                        style={{ backgroundColor: `${lab.color}15` }}
+                      >
+                        <Icon className="w-5 h-5" style={{ color: lab.color }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[11px] font-bold text-[#003087] uppercase tracking-wider">{lab.auditNumber}</span>
+                        </div>
+                        <h3 className="text-[16px] font-bold text-gray-900 truncate" title={lab.name}>
+                          {lab.name}
+                        </h3>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <p className="text-[13px] text-gray-500 flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5" /> Última actualización: <span className="font-medium text-gray-700">{lab.lastAudit}</span>
+                      </p>
+                      <p className="text-[13px] text-gray-500 flex items-center gap-1.5 truncate" title={lab.respText}>
+                        {lab.respCount === 1 ? <User className="w-3.5 h-3.5" /> : <Users className="w-3.5 h-3.5" />}
+                        <span className="font-medium text-gray-700 truncate">{lab.respText}</span>
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between mt-4">
+                      <Badge className={`${lab.statusColor} text-white hover:opacity-90 text-[11px] px-2 py-0.5 border-none shadow-none`}>
+                        {lab.status}
+                      </Badge>
+                      <Button
+                        variant="outline"
+                        onClick={() => setSelectedAudit(lab.audit)}
+                        className="h-7 text-[12px] px-3 bg-[#003087] text-white border-[#003087] shadow-sm"
+                      >
+                        Ver detalles
+                      </Button>
+                    </div>
                   </div>
-                  <Badge className={`${lab.statusColor} text-white hover:opacity-90 text-[11px] px-2 py-0.5 border-none shadow-none`}>
-                    {lab.status}
-                  </Badge>
-                  <Button
-                    variant="outline"
-                    onClick={() => setSelectedAudit(lab.audit)}
-                    className="w-full text-[13px] border-[#E8E8E8] text-gray-700 hover:bg-[#F5F5F5] shadow-sm mt-2"
-                  >
-                    Ver detalle
-                  </Button>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>
@@ -209,9 +270,9 @@ export function DashboardAdmin() {
         </div>
       )}
 
-      <ConsultaDetalleModal 
-        selectedAudit={selectedAudit} 
-        onClose={() => setSelectedAudit(null)} 
+      <ConsultaDetalleModal
+        selectedAudit={selectedAudit}
+        onClose={() => setSelectedAudit(null)}
         isAdmin={true}
         consultores={consultores}
       />

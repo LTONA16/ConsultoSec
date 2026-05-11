@@ -22,6 +22,8 @@ import { Badge } from '../../components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '../../components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../../components/ui/command';
 import { Button } from '../../components/ui/button';
+import { Card } from '../../components/ui/card';
+import { Input } from '../../components/ui/input';
 
 // --- SUB-COMPONENTE: Modal de Descarga ---
 const ModalDescarga = ({ training, onClose }: { training: Training | null, onClose: () => void }) => {
@@ -162,9 +164,9 @@ const TrainingCard = ({
 
   return (
     <>
-      <div className="bg-white border border-[#E8E8E8] rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow text-left">
+      <Card className="p-6 border border-[#E8E8E8] hover:border-gray-300 transition-colors bg-white text-left">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="text-lg font-bold text-gray-900">{training.tema}</h3>
+          <h3 className="text-[16px] font-bold text-gray-900">{training.tema}</h3>
           <div className="flex items-center gap-2">
             {training.consultas.length > 0 && (
               <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-1 rounded-full font-bold uppercase tracking-wider">
@@ -179,36 +181,38 @@ const TrainingCard = ({
           </div>
         </div>
 
-        <p className="text-sm text-gray-500 mb-4 line-clamp-2">{training.descripcion}</p>
+        <p className="text-[13px] text-gray-500 mb-4 line-clamp-2">{training.descripcion}</p>
 
-        <div className="flex flex-wrap gap-6 text-sm text-gray-600 mb-4">
-          <div className="flex items-center gap-2"><Calendar size={16} className="text-gray-400" /> {training.fecha}</div>
-          <div className="flex items-center gap-2"><MapPin size={16} className="text-gray-400" /> {labNames || 'Sin laboratorio asignado'}</div>
-          <div className="flex items-center gap-2"><Users size={16} className="text-gray-400" /> {training.asistentes.length} asistentes</div>
+        <div className="flex flex-wrap gap-4 text-[13px] text-gray-600 mb-4">
+          <div className="flex items-center gap-1.5"><Calendar size={14} className="text-gray-400" /> {training.fecha}</div>
+          <div className="flex items-center gap-1.5"><MapPin size={14} className="text-gray-400" /> {labNames || 'Sin laboratorio asignado'}</div>
+          <div className="flex items-center gap-1.5"><Users size={14} className="text-gray-400" /> {training.asistentes.length} asistentes</div>
         </div>
 
         {audNames && (
-          <div className="text-xs text-gray-500 mb-4">
-            <span className="font-semibold">Auditorías relacionadas:</span> {audNames}
+          <div className="text-[12px] text-gray-500 mb-4">
+            <span className="font-semibold text-gray-700">Auditorías relacionadas:</span> {audNames}
           </div>
         )}
 
-        <div className="flex gap-3 border-t border-gray-50 pt-4">
-          <button
+        <div className="flex gap-3 mt-4 pt-4 border-t border-[#E8E8E8]">
+          <Button
+            variant="outline"
             onClick={() => onEdit(training)}
-            className="px-4 py-1.5 bg-gray-900 text-white rounded text-sm font-semibold hover:bg-gray-800 transition-colors"
+            className="h-8 text-[12px] px-3 border-[#E8E8E8] text-gray-700 hover:bg-[#F5F5F5] shadow-sm"
           >
-            Editar / Ver detalles
-          </button>
-          <button
+            Editar / Detalles
+          </Button>
+          <Button
+            variant="outline"
             onClick={() => setShowDescarga(true)}
-            className="px-4 py-1.5 border border-gray-300 rounded text-sm font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-1.5"
+            className="h-8 text-[12px] px-3 border-[#E8E8E8] text-gray-700 hover:bg-[#F5F5F5] shadow-sm flex items-center gap-1.5"
           >
             <Upload size={14} className="rotate-180" />
-            Descargar materiales{totalArchivos > 0 ? ` (${totalArchivos})` : ''}
-          </button>
+            Descargar{totalArchivos > 0 ? ` (${totalArchivos})` : ''}
+          </Button>
         </div>
-      </div>
+      </Card>
 
       {showDescarga && <ModalDescarga training={training} onClose={() => setShowDescarga(false)} />}
     </>
@@ -752,43 +756,47 @@ export const CapacitacionesAdmin = () => {
   }
 
   return (
-    <div className="p-8 w-full bg-[#F5F5F5] min-h-screen">
-      <header className="flex justify-between items-center mb-8">
-        <div className="text-left">
-          <h2 className="text-2xl font-bold text-gray-800">Capacitaciones registradas</h2>
-          <p className="text-gray-500 text-sm">Registro dinámico de sesiones vinculadas a las auditorías y laboratorios.</p>
+    <div className="p-8 space-y-8 animate-in fade-in duration-500">
+      <header className="flex justify-between items-start">
+        <div>
+          <h1 className="text-[20px] font-medium text-gray-900">
+            Capacitaciones registradas
+          </h1>
+          <p className="text-[14px] text-gray-500 mt-1">
+            Registro dinámico de sesiones vinculadas a las auditorías y laboratorios.
+          </p>
         </div>
-        <button
+        <Button
           onClick={handleOpenNew}
-          className="bg-[#003087] hover:bg-blue-800 text-white px-6 py-2.5 rounded-md flex items-center gap-2 shadow-md font-semibold"
+          className="bg-[#003087] hover:bg-[#002366] text-white flex items-center gap-2 h-9 px-4 text-[13px] shadow-sm"
         >
-          <Plus size={20} /> Nueva capacitación
-        </button>
+          <Plus size={16} /> Nueva capacitación
+        </Button>
       </header>
 
       {/* Barra de búsqueda */}
-      <div className="max-w-5xl mb-6">
-        <div className="relative">
-          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
-          <input
+      <div>
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Input
             type="text"
             placeholder="Buscar por título o nombre de consultor asistente..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-gray-400 rounded-lg text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/30 focus:border-[#003087] transition-all"
+            className="pl-9 bg-white border-[#E8E8E8] focus-visible:ring-[#003087]"
           />
           {searchTerm && (
             <button
               onClick={() => setSearchTerm('')}
-              className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
-              <X size={16} />
+              <X size={14} />
             </button>
           )}
         </div>
       </div>
 
-      <div className="max-w-5xl space-y-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {(() => {
           const filtered = trainings.filter(t => {
             const term = searchTerm.toLowerCase();
@@ -805,7 +813,7 @@ export const CapacitacionesAdmin = () => {
           });
 
           if (filtered.length === 0) return (
-            <div className="bg-white p-20 rounded-xl border-2 border-dashed border-gray-200 text-center">
+            <div className="col-span-full bg-white p-12 rounded-xl border border-dashed border-[#E8E8E8] text-center">
               <ClipboardCheck className="mx-auto text-gray-300 mb-4" size={48} />
               <p className="text-gray-500 font-medium">
                 {searchTerm ? 'No se encontraron capacitaciones con esa búsqueda.' : 'No hay capacitaciones registradas todavía.'}
