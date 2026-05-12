@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { Card } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { ClipboardList, Clock, AlertCircle, Wrench, ChevronRight } from 'lucide-react';
+import { ClipboardList, Clock, AlertCircle, Wrench, ChevronRight, Monitor, FlaskConical, Cog, HeartPulse, Microscope, Users, User, Hammer, Droplets, Cpu, Factory, Zap } from 'lucide-react';
 import { consultasService, Consulta, Usuario } from '../../../features/consultas/services/consultasService';
 import { useAuth } from '../../../features/auth/AuthContext';
 import { ConsultaDetalleModal } from '../../../features/consultas/components/ConsultaDetalleModal';
@@ -22,7 +22,28 @@ const getEstadoInfo = (estado: string) => {
   }
 };
 
+const getLabIconAndColor = (areaName: string | undefined) => {
+  if (!areaName) return { icon: ClipboardList, color: '#6B7280' };
+  const name = areaName.toLowerCase();
+
+  if (name.includes('carpintería')) return { icon: Hammer, color: '#8B4513' };
+  if (name.includes('lavado')) return { icon: Droplets, color: '#0EA5E9' };
+  if (name.includes('mecatrónica')) return { icon: Cpu, color: '#8B5CF6' };
+  if (name.includes('manufactura')) return { icon: Factory, color: '#F59E0B' };
+  if (name.includes('electrica') || name.includes('eléctrica')) return { icon: Zap, color: '#EAB308' };
+
+  if (name.includes('cómputo') || name.includes('sistemas') || name.includes('redes') || name.includes('informátic')) return { icon: Monitor, color: '#3B82F6' };
+  if (name.includes('químic') || name.includes('biolog') || name.includes('clínic') || name.includes('alimento') || name.includes('físic')) return { icon: FlaskConical, color: '#10B981' };
+  if (name.includes('mecánic') || name.includes('civil')) return { icon: Cog, color: '#F59E0B' };
+  if (name.includes('salud') || name.includes('enfermería') || name.includes('medicina') || name.includes('deporte')) return { icon: HeartPulse, color: '#EF4444' };
+
+  const colors = ['#8B5CF6', '#EC4899', '#14B8A6', '#F97316', '#6366F1'];
+  const colorIndex = name.length % colors.length;
+  return { icon: Microscope, color: colors[colorIndex] };
+};
+
 const getProgress = (consulta: Consulta) => {
+  if (consulta.estado === 'finalizada') return 100;
   if (!consulta.items_checklist || consulta.items_checklist.length === 0) return 0;
   const evaluados = consulta.items_checklist.filter(item => item.cumple !== 'no_evaluado').length;
   return Math.round((evaluados / consulta.items_checklist.length) * 100);
@@ -42,7 +63,8 @@ export function DashboardConsultor() {
         consultasService.obtenerConsultas(token),
         consultasService.obtenerConsultores(token).catch(() => [])
       ]).then(([data, consultoresData]) => {
-        setConsultas(data);
+        const ordenadas = data.sort((a, b) => new Date(b.fecha_actualizacion || b.fecha_creacion).getTime() - new Date(a.fecha_actualizacion || a.fecha_creacion).getTime());
+        setConsultas(ordenadas);
         setConsultores(consultoresData);
         setLoading(false);
       }).catch(err => {
@@ -92,8 +114,10 @@ export function DashboardConsultor() {
       }
 
       return {
+        audit: c,
         titulo,
-        lab: c.area_nombre ? `${c.area_nombre} #${c.id}` : `Consulta #${c.id}`,
+        lab: c.area_nombre ? c.area_nombre : `Consulta AUD-${c.id.toString().padStart(3, '0')}`,
+        auditNumber: `AUD-${c.id.toString().padStart(3, '0')}`,
         tipo,
         tiempo
       };
@@ -151,17 +175,30 @@ export function DashboardConsultor() {
             ) : consultas.map((audit) => {
               const info = getEstadoInfo(audit.estado);
               const progresoNum = getProgress(audit);
-              const fechaStr = new Date(audit.fecha_creacion).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+              const fechaStr = new Date(audit.fecha_actualizacion || audit.fecha_creacion).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+              const labStyle = getLabIconAndColor(audit.area_nombre);
+              const Icon = labStyle.icon;
 
               return (
                 <Card key={audit.id} className="p-5 border border-[#E8E8E8] hover:border-gray-300 transition-colors">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-1">
-                        <h3 className="text-[15px] font-bold text-gray-900">{audit.area_nombre ? `${audit.area_nombre} #${audit.id}` : `Consulta #${audit.id}`}</h3>
-                        <Badge className={`${info.badgeColor} text-white text-[11px] font-medium px-2 py-0.5 border-none shadow-none`}>{info.label}</Badge>
+                    <div className="flex-1 flex items-center gap-3">
+                      <div
+                        className="w-10 h-10 shrink-0 rounded-lg flex items-center justify-center shadow-sm"
+                        style={{ backgroundColor: `${labStyle.color}15` }}
+                      >
+                        <Icon className="w-5 h-5" style={{ color: labStyle.color }} />
                       </div>
-                      <p className="text-[13px] text-gray-500 flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />Creada: {fechaStr}</p>
+                      <div>
+                        <div className="flex items-center gap-3 mb-0.5">
+                          <span className="text-[11px] font-bold text-[#003087] uppercase tracking-wider">AUD-{audit.id.toString().padStart(3, '0')}</span>
+                        </div>
+                        <h3 className="text-[15px] font-bold text-gray-900 leading-tight">{audit.area_nombre || `Consulta AUD-${audit.id.toString().padStart(3, '0')}`}</h3>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <Badge className={`${info.badgeColor} text-white text-[10px] font-medium px-2 py-0.5 border-none shadow-none`}>{info.label}</Badge>
+                        </div>
+                        <p className="text-[12px] text-gray-500 flex items-center gap-1.5 mt-1.5"><Clock className="w-3.5 h-3.5" />Última actualización: {fechaStr}</p>
+                      </div>
                     </div>
 
                     <div className="hidden md:block w-32">
@@ -196,9 +233,16 @@ export function DashboardConsultor() {
               {tareasPendientes.length === 0 ? (
                 <div className="p-6 text-center text-[13px] text-gray-500">No hay tareas pendientes en este momento.</div>
               ) : tareasPendientes.map((tarea, idx) => (
-                <div key={idx} className="p-4 hover:bg-gray-50 transition-colors cursor-pointer">
+                <div 
+                  key={idx} 
+                  className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                  onClick={() => handleAccion(tarea.audit, getEstadoInfo(tarea.audit.estado).isChecklist)}
+                >
                   <div className="flex items-start justify-between gap-2">
                     <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[10px] font-bold text-[#003087] uppercase tracking-wider">{tarea.auditNumber}</span>
+                      </div>
                       <p className="text-[13px] font-semibold text-gray-900 leading-tight">{tarea.titulo}</p>
                       <p className="text-[12px] text-gray-500 mt-1">{tarea.lab}</p>
                     </div>

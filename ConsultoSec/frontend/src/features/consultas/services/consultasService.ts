@@ -12,6 +12,14 @@ export interface ChecklistItem {
   imagen: string | null;
 }
 
+export interface RequisitoLaboratorio {
+  id: number;
+  categoria: string;
+  pregunta: string;
+  normativa_aplicable: string | null;
+  area: number;
+}
+
 export interface Consulta {
   id: number;
   notas: string;
@@ -147,6 +155,40 @@ export const consultasService = {
     return response.json();
   },
 
+  async subirImagenChecklist(token: string, id: number, file: File | null): Promise<ChecklistItem> {
+    const formData = new FormData();
+    if (file) {
+      formData.append('imagen', file);
+    } else {
+      formData.append('imagen', '');
+    }
+
+    const response = await fetch(`${API_URL}/checklists/${id}/`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      },
+      body: formData,
+    });
+    if (!response.ok) throw new Error("Error al subir la imagen del checklist");
+    return response.json();
+  },
+
+  async crearChecklistItem(token: string, data: Partial<ChecklistItem>): Promise<ChecklistItem> {
+    const response = await fetch(`${API_URL}/checklists/`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error("Error al crear el item del checklist");
+    return response.json();
+  },
+
   async obtenerAreas(token: string): Promise<AreaLaboratorio[]> {
     const response = await fetch(`${API_URL}/areas-laboratorio/`, {
       method: "GET",
@@ -157,6 +199,20 @@ export const consultasService = {
       },
     });
     if (!response.ok) throw new Error("Error al obtener las áreas");
+    return response.json();
+  },
+
+  async obtenerRequisitosLaboratorio(token: string, areaId?: number): Promise<RequisitoLaboratorio[]> {
+    const url = areaId ? `${API_URL}/requisitos-laboratorio/?area=${areaId}` : `${API_URL}/requisitos-laboratorio/`;
+    const response = await fetch(url, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+    });
+    if (!response.ok) throw new Error("Error al obtener los requisitos de laboratorio");
     return response.json();
   },
 

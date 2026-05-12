@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
 
 class AreaCatalogo(models.Model):
@@ -239,3 +239,28 @@ def eliminar_archivo_disco(sender, instance, **kwargs):
         except Exception as e:
             print(f"No se pudo eliminar el archivo del disco: {e}")
 
+@receiver(pre_save, sender=ChecklistItem)
+def eliminar_imagen_vieja_checklist(sender, instance, **kwargs):
+    if not instance.pk:
+        return
+    try:
+        viejo = ChecklistItem.objects.get(pk=instance.pk)
+    except ChecklistItem.DoesNotExist:
+        return
+    if viejo.imagen and viejo.imagen != instance.imagen:
+        import os
+        try:
+            if os.path.isfile(viejo.imagen.path):
+                os.remove(viejo.imagen.path)
+        except Exception as e:
+            print(f"No se pudo eliminar la imagen vieja del disco: {e}")
+
+@receiver(post_delete, sender=ChecklistItem)
+def eliminar_imagen_checklist_al_borrar(sender, instance, **kwargs):
+    if instance.imagen:
+        import os
+        try:
+            if os.path.isfile(instance.imagen.path):
+                os.remove(instance.imagen.path)
+        except Exception as e:
+            print(f"No se pudo eliminar la imagen del disco: {e}")
