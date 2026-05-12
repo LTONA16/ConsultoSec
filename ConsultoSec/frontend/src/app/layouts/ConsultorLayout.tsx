@@ -73,11 +73,11 @@ export function ConsultorLayout() {
       <aside className="w-64 bg-white border-r border-[#E8E8E8] flex flex-col h-full">
         {/* Logo Encapsulado para ocultar bordes grises */}
         <div className="p-6 border-b border-[#E8E8E8] flex items-center gap-3">
-          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm overflow-hidden border border-[#E8E8E8] shrink-0">
+          <div className="w-10 h-10 bg-[#003087] rounded-full flex items-center justify-center shadow-sm overflow-hidden border border-[#E8E8E8] shrink-0 p-1">
             <img
-              src="/logo.png"
+              src="/logo.svg"
               alt="ConsultoSec Logo"
-              className="w-full h-full object-contain"
+              className="w-full h-full object-contain brightness-0 invert"
             />
           </div>
 

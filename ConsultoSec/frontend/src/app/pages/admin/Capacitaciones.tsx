@@ -162,55 +162,71 @@ const TrainingCard = ({
   }).join(', ');
   const totalArchivos = training.archivos?.length || 0;
 
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    const [year, month, day] = dateString.split('-');
+    const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    return `${parseInt(day, 10)} de ${months[parseInt(month, 10) - 1]} de ${year}`;
+  };
+
   return (
     <>
-      <Card className="p-6 border border-[#E8E8E8] hover:border-gray-300 transition-colors bg-white text-left">
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="text-[16px] font-bold text-gray-900">{training.tema}</h3>
-          <div className="flex items-center gap-2">
+      <Card className="px-4 pt-3 pb-3 border border-[#E8E8E8] hover:border-gray-300 transition-colors bg-white text-left flex flex-col h-full">
+        {/* Fila 1: ID + Título */}
+        <div className="flex items-center">
+          <span className="text-[10px] font-bold text-[#003087] bg-blue-50 px-2 py-0.5 rounded uppercase tracking-wider shrink-0 mt-0.5">
+            CAP-{training.id}
+          </span>
+        </div>
+
+        {/* Título */}
+        <h3 className="text-[14px] font-bold text-gray-900 leading-snug">{training.tema}</h3>
+
+
+        {/* Descripción */}
+        <p className="text-[12px] text-gray-500 mb-1 line-clamp-2 leading-relaxed flex-grow">{training.descripcion}</p>
+
+        {/* Metadatos: fecha, lab, asistentes */}
+        <div className="flex flex-col gap-1 text-[12px] text-gray-600">
+          <div className="flex items-center gap-1.5"><Calendar size={12} className="text-gray-400 shrink-0" /> {formatDate(training.fecha)}</div>
+          <div className="flex items-center gap-1.5"><MapPin size={12} className="text-gray-400 shrink-0" /> {labNames || 'Sin laboratorio asignado'}</div>
+          <div className="flex items-center gap-1.5"><Users size={12} className="text-gray-400 shrink-0" /> {training.asistentes.length} asistentes</div>
+        </div>
+
+        {/* Fila inferior: pills izquierda, botones derecha */}
+        <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#E8E8E8] mt-auto">
+          {/* Pills de estado */}
+          <div className="flex items-center gap-1.5 flex-wrap">
             {training.consultas.length > 0 && (
-              <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-1 rounded-full font-bold uppercase tracking-wider">
-                {training.consultas.length} Auditorías
+              <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                {training.consultas.length} Auditorias
               </span>
             )}
             {totalArchivos > 0 && (
-              <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-1 rounded-full font-bold">
+              <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-bold">
                 {totalArchivos} archivo{totalArchivos > 1 ? 's' : ''}
               </span>
             )}
           </div>
-        </div>
 
-        <p className="text-[13px] text-gray-500 mb-4 line-clamp-2">{training.descripcion}</p>
-
-        <div className="flex flex-wrap gap-4 text-[13px] text-gray-600 mb-4">
-          <div className="flex items-center gap-1.5"><Calendar size={14} className="text-gray-400" /> {training.fecha}</div>
-          <div className="flex items-center gap-1.5"><MapPin size={14} className="text-gray-400" /> {labNames || 'Sin laboratorio asignado'}</div>
-          <div className="flex items-center gap-1.5"><Users size={14} className="text-gray-400" /> {training.asistentes.length} asistentes</div>
-        </div>
-
-        {audNames && (
-          <div className="text-[12px] text-gray-500 mb-4">
-            <span className="font-semibold text-gray-700">Auditorías relacionadas:</span> {audNames}
+          {/* Botones */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Button
+              variant="outline"
+              onClick={() => onEdit(training)}
+              className="h-7 text-[11px] px-2.5 bg-[#003087] text-white border-[#003087] hover:bg-[#002266] hover:text-white shadow-sm flex items-center"
+            >
+              Editar
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowDescarga(true)}
+              className="h-7 text-[11px] px-2.5 border-[#E8E8E8] text-gray-700 hover:bg-[#F5F5F5] shadow-sm flex items-center gap-1"
+            >
+              <Upload size={12} className="rotate-180" />
+              {totalArchivos > 0 ? `(${totalArchivos})` : 'Archivos'}
+            </Button>
           </div>
-        )}
-
-        <div className="flex gap-3 mt-4 pt-4 border-t border-[#E8E8E8]">
-          <Button
-            variant="outline"
-            onClick={() => onEdit(training)}
-            className="h-8 text-[12px] px-3 border-[#E8E8E8] text-gray-700 hover:bg-[#F5F5F5] shadow-sm"
-          >
-            Editar / Detalles
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => setShowDescarga(true)}
-            className="h-8 text-[12px] px-3 border-[#E8E8E8] text-gray-700 hover:bg-[#F5F5F5] shadow-sm flex items-center gap-1.5"
-          >
-            <Upload size={14} className="rotate-180" />
-            Descargar{totalArchivos > 0 ? ` (${totalArchivos})` : ''}
-          </Button>
         </div>
       </Card>
 

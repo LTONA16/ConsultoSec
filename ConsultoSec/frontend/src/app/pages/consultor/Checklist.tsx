@@ -6,6 +6,9 @@ import { Button } from '../../components/ui/button';
 import { Textarea } from '../../components/ui/textarea';
 import { Label } from '../../components/ui/label';
 import { Input } from '../../components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
+import { ScrollArea } from '../../components/ui/scroll-area';
 import {
   CheckCircle2,
   XCircle,
@@ -23,10 +26,12 @@ import {
   PlusCircle,
   Edit3,
   HelpCircle,
-  Send
+  Send,
+  Search,
+  Check
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { consultasService, Consulta, ChecklistItem } from '../../../features/consultas/services/consultasService';
+import { consultasService, Consulta, ChecklistItem, RequisitoLaboratorio } from '../../../features/consultas/services/consultasService';
 import { useAuth } from '../../../features/auth/AuthContext';
 
 export function Checklist() {
@@ -43,9 +48,26 @@ export function Checklist() {
   const [isFinalizarModalOpen, setIsFinalizarModalOpen] = useState(false);
   const [isFinishing, setIsFinishing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [nuevaCatNombre, setNuevaCatNombre] = useState('');
-  const [preguntasDinamicas, setPreguntasDinamicas] = useState<any[]>([]);
-  const [ultimoIdAgregado, setUltimoIdAgregado] = useState('');
+  const [isNuevoReqModalOpen, setIsNuevoReqModalOpen] = useState(false);
+  const [nuevoReqCategoria, setNuevoReqCategoria] = useState('');
+  const [nuevoReqNuevaCategoria, setNuevoReqNuevaCategoria] = useState('');
+  const [nuevoReqTexto, setNuevoReqTexto] = useState('');
+  const [nuevoReqNorma, setNuevoReqNorma] = useState('');
+  const [isSavingNuevoReq, setIsSavingNuevoReq] = useState(false);
+
+  const [bancoRequisitos, setBancoRequisitos] = useState<RequisitoLaboratorio[]>([]);
+  const [bancoSearchTerm, setBancoSearchTerm] = useState('');
+  const [isBancoLoading, setIsBancoLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('banco');
+  
+  const [imagenModal, setImagenModal] = useState<{ isOpen: boolean; url: string; itemId: number | null }>({
+    isOpen: false,
+    url: '',
+    itemId: null
+  });
+  const [isUploading, setIsUploading] = useState<number | null>(null);
+
+  const fileInputRefs = useRef<{ [key: number]: HTMLInputElement | null }>({});
   const debounceTimers = useRef<Record<string, NodeJS.Timeout>>({});
 
   useEffect(() => {
@@ -68,17 +90,36 @@ export function Checklist() {
     }
   }, [token, idFromUrl]);
 
-  // Filtrado de items (incluyendo preguntas dinámicas)
+  // Cargar banco de requisitos cuando se abre el modal y la pestaña es "banco"
+  useEffect(() => {
+    if (isNuevoReqModalOpen && activeTab === 'banco' && consulta?.area_laboratorio && token) {
+      if (bancoRequisitos.length > 0) return; // Ya se cargaron
+      setIsBancoLoading(true);
+      consultasService.obtenerRequisitosLaboratorio(token, consulta.area_laboratorio)
+        .then(data => {
+          // Filtrar los que ya están en el checklist actual
+          const existentes = new Set(consulta.items_checklist.map(i => i.requisito.toLowerCase().trim()));
+          const disponibles = data.filter(r => !existentes.has(r.pregunta.toLowerCase().trim()));
+          setBancoRequisitos(disponibles);
+        })
+        .catch(err => {
+          console.error("Error cargando banco de requisitos:", err);
+          toast.error("Error al cargar requisitos predefinidos");
+        })
+        .finally(() => setIsBancoLoading(false));
+    }
+  }, [isNuevoReqModalOpen, activeTab, consulta, token, bancoRequisitos.length]);
+
+  // Filtrado de items
   const itemsFiltrados = [
-    ...(consulta?.items_checklist || []),
-    ...preguntasDinamicas
+    ...(consulta?.items_checklist || [])
   ].filter(item => {
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
     const texto = item.requisito || item.pregunta || '';
     const norma = item.normativa_aplicable || '';
     const cat = item.categoria || '';
-    
+
     return (
       texto.toLowerCase().includes(term) ||
       norma.toLowerCase().includes(term) ||
@@ -96,6 +137,93 @@ export function Checklist() {
     }
     return acc;
   }, []);
+
+  // Obtener categorías únicas para el dropdown
+  const categoriasUnicas = Array.from(new Set((consulta?.items_checklist || []).map(i => i.categoria).filter(Boolean)));
+
+  const handleGuardarNuevoRequisito = async () => {
+    if (!token || !consulta) return;
+
+    const categoriaFinal = nuevoReqCategoria === 'otra' ? nuevoReqNuevaCategoria.trim() : nuevoReqCategoria;
+
+    if (!categoriaFinal || !nuevoReqTexto.trim()) {
+      toast.warning('Campos incompletos', {
+        description: 'Debes seleccionar una categoría y escribir el requisito.'
+      });
+      return;
+    }
+
+    setIsSavingNuevoReq(true);
+    try {
+      const payload = {
+        consulta: consulta.id,
+        categoria: categoriaFinal,
+        requisito: nuevoReqTexto.trim(),
+        normativa_aplicable: nuevoReqNorma.trim() || null,
+        cumple: 'no_evaluado' as const,
+        area: consulta.area_nombre || '',
+        observacion: '',
+        mejora: '',
+        comentarios: ''
+      };
+
+      const nuevoItem = await consultasService.crearChecklistItem(token, payload);
+
+      setConsulta({
+        ...consulta,
+        items_checklist: [...consulta.items_checklist, nuevoItem]
+      });
+
+      toast.success('Requisito agregado con éxito');
+
+      setNuevoReqCategoria('');
+      setNuevoReqNuevaCategoria('');
+      setNuevoReqTexto('');
+      setNuevoReqNorma('');
+      setIsNuevoReqModalOpen(false);
+      setActiveTab('banco');
+    } catch (error) {
+      console.error("Error al crear el requisito", error);
+      toast.error('Hubo un error al guardar el nuevo requisito');
+    } finally {
+      setIsSavingNuevoReq(false);
+    }
+  };
+
+  const handleAgregarDelBanco = async (req: RequisitoLaboratorio) => {
+    if (!token || !consulta) return;
+    setIsSavingNuevoReq(true);
+    try {
+      const payload = {
+        consulta: consulta.id,
+        categoria: req.categoria,
+        requisito: req.pregunta,
+        normativa_aplicable: req.normativa_aplicable,
+        cumple: 'no_evaluado' as const,
+        area: consulta.area_nombre || '',
+        observacion: '',
+        mejora: '',
+        comentarios: ''
+      };
+
+      const nuevoItem = await consultasService.crearChecklistItem(token, payload);
+
+      setConsulta({
+        ...consulta,
+        items_checklist: [...consulta.items_checklist, nuevoItem]
+      });
+
+      toast.success('Requisito agregado del banco');
+      setBancoRequisitos(prev => prev.filter(r => r.id !== req.id));
+      setIsNuevoReqModalOpen(false);
+      setActiveTab('banco');
+    } catch (error) {
+      console.error("Error al agregar del banco", error);
+      toast.error('Hubo un error al guardar el requisito');
+    } finally {
+      setIsSavingNuevoReq(false);
+    }
+  };
 
   const handleRespuesta = (item: ChecklistItem, valor: 'si' | 'no' | 'parcial' | 'no_evaluado') => {
     if (!consulta || !token) return;
@@ -116,6 +244,43 @@ export function Checklist() {
         });
       })
       .catch(err => console.error("Error updating item", err));
+  };
+
+  const handleUploadImage = async (itemId: number, file: File) => {
+    if (!token || !consulta) return;
+    setIsUploading(itemId);
+    try {
+      const updatedItem = await consultasService.subirImagenChecklist(token, itemId, file);
+      setConsulta(prev => prev ? ({
+        ...prev,
+        items_checklist: prev.items_checklist.map(i => i.id === itemId ? updatedItem : i)
+      }) : prev);
+      toast.success('Imagen subida correctamente');
+    } catch (error) {
+      console.error(error);
+      toast.error('Error al subir la imagen');
+    } finally {
+      setIsUploading(null);
+    }
+  };
+
+  const handleDeleteImage = async (itemId: number) => {
+    if (!token || !consulta) return;
+    setIsUploading(itemId);
+    try {
+      const updatedItem = await consultasService.subirImagenChecklist(token, itemId, null);
+      setConsulta(prev => prev ? ({
+        ...prev,
+        items_checklist: prev.items_checklist.map(i => i.id === itemId ? updatedItem : i)
+      }) : prev);
+      toast.success('Imagen eliminada correctamente');
+      setImagenModal({ isOpen: false, url: '', itemId: null });
+    } catch (error) {
+      console.error(error);
+      toast.error('Error al eliminar la imagen');
+    } finally {
+      setIsUploading(null);
+    }
   };
 
   const handleNota = (item: ChecklistItem, observacion: string) => {
@@ -152,16 +317,16 @@ export function Checklist() {
     // --- SOLUCIÓN AL BUCLE: Lógica condicional de estados ---
     // Si la auditoría ya viene de regreso (Última Revisión), el destino final es 'finalizada'.
     // Si es la primera vez que se hace el checklist, el destino es 'mejoras_solicitadas'.
-    const nuevoEstado = consulta.estado === 'ultima_revision' 
-      ? 'finalizada' 
+    const nuevoEstado = consulta.estado === 'ultima_revision'
+      ? 'finalizada'
       : 'mejoras_solicitadas';
 
     try {
       await consultasService.actualizarConsulta(token, consulta.id, { estado: nuevoEstado });
-      
+
       // Opcional: Mostramos un mensaje diferente dependiendo de lo que haya pasado
-      const mensajeExito = nuevoEstado === 'finalizada' 
-        ? 'Auditoría concluida definitivamente' 
+      const mensajeExito = nuevoEstado === 'finalizada'
+        ? 'Auditoría concluida definitivamente'
         : 'Auditoría finalizada con éxito (Etapa de Mejoras)';
 
       toast.success(mensajeExito, { position: 'top-right', duration: 3000, style: { marginTop: '6em' } });
@@ -224,33 +389,6 @@ export function Checklist() {
     );
   }
 
-  const addNuevaPregunta = (categoriaEspecifica?: string) => {
-    const nuevoId = `custom_${Date.now()}`;
-    const nueva = {
-      id: nuevoId,
-      categoria: categoriaEspecifica || nuevaCatNombre || 'Adicional',
-      pregunta: '',
-      esNueva: true
-    };
-    setPreguntasDinamicas([...preguntasDinamicas, nueva]);
-    setUltimoIdAgregado(nuevoId);
-  };
-
-  const updateTextoPregunta = (id: string, texto: string) => {
-    setPreguntasDinamicas(prev => prev.map(q => q.id === id ? { ...q, pregunta: texto } : q));
-  };
-
-  // NUEVA FUNCIÓN: Permite cambiar el nombre de una sección completa
-  const updateNombreSeccion = (viejoNombre: string, nuevoNombre: string) => {
-    setPreguntasDinamicas(prev => prev.map(q => 
-      q.categoria === viejoNombre ? { ...q, categoria: nuevoNombre } : q
-    ));
-  };
-
-  const eliminarPregunta = (id: string) => {
-    setPreguntasDinamicas(prev => prev.filter(q => q.id !== id));
-  };
-
   return (
     <div className="p-8 max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500">
       {/* Header informativo renovado */}
@@ -274,14 +412,14 @@ export function Checklist() {
           <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
             <LayoutGrid className="w-4 h-4 text-gray-400 group-focus-within:text-[#003087] transition-colors" />
           </div>
-          <Input 
+          <Input
             placeholder="Buscar por pregunta o categoría..."
             className="pl-10 h-11 border-[#E8E8E8] bg-gray-50/50 focus:bg-white transition-all rounded-xl text-[14px]"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           {searchTerm && (
-            <button 
+            <button
               onClick={() => setSearchTerm('')}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
             >
@@ -350,10 +488,43 @@ export function Checklist() {
                                 </button>
                               </div>
 
-                              <Button variant="outline" size="sm" className="h-10 border-[#E8E8E8] gap-2">
-                                <Camera className="w-4 h-4 text-gray-400" />
-                                Foto
-                              </Button>
+                              <input 
+                                type="file" 
+                                accept="image/*" 
+                                hidden 
+                                ref={el => {
+                                  if (el) fileInputRefs.current[q.id] = el;
+                                }} 
+                                onChange={(e) => {
+                                  if (e.target.files && e.target.files[0]) {
+                                    handleUploadImage(q.id, e.target.files[0]);
+                                    // Reset input so the same file can be selected again if needed
+                                    e.target.value = '';
+                                  }
+                                }} 
+                              />
+                              {q.imagen ? (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="h-10 border-[#003087] bg-blue-50 text-[#003087] gap-2 hover:bg-blue-100"
+                                  onClick={() => setImagenModal({ isOpen: true, url: q.imagen as string, itemId: q.id })}
+                                >
+                                  <Camera className="w-4 h-4" />
+                                  Ver Foto
+                                </Button>
+                              ) : (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="h-10 border-[#E8E8E8] gap-2"
+                                  onClick={() => fileInputRefs.current[q.id]?.click()}
+                                  disabled={isUploading === q.id}
+                                >
+                                  <Camera className="w-4 h-4 text-gray-400" />
+                                  {isUploading === q.id ? 'Subiendo...' : 'Foto'}
+                                </Button>
+                              )}
                             </div>
                           </>
                         ) : (
@@ -384,30 +555,20 @@ export function Checklist() {
                     </div>
                   </Card>
                 ))}
+              </div>
             </div>
-          </div>
           ))
         )}
 
         {/* Panel Inferior */}
-        <div className="pt-6">
-          <Card className="p-8 border-2 border-dashed border-gray-200 bg-gray-50/20 flex flex-col items-center space-y-5">
-            <div className="text-center">
-              <h3 className="text-[#003087] font-bold text-[16px]">¿Nueva categoría?</h3>
-              <p className="text-gray-400 text-[12px]">Crea una nueva sección personalizada</p>
-            </div>
-            <div className="flex w-full max-w-lg gap-3 bg-white p-2 rounded-xl border border-gray-200">
-              <Input 
-                placeholder="Nombre de sección..."
-                value={nuevaCatNombre}
-                onChange={(e) => setNuevaCatNombre(e.target.value)}
-                className="border-none focus-visible:ring-0 text-[14px]"
-              />
-              <Button onClick={() => addNuevaPregunta()} className="bg-[#003087] text-white hover:bg-[#002366] gap-2 px-6 h-10">
-                <Plus className="w-4 h-4" /> Crear
-              </Button>
-            </div>
-          </Card>
+        <div className="pt-6 flex justify-center">
+          <Button
+            onClick={() => setIsNuevoReqModalOpen(true)}
+            className="bg-white border-2 border-dashed border-[#003087] text-[#003087] hover:bg-blue-50 px-8 py-6 rounded-xl font-bold gap-3"
+          >
+            <PlusCircle className="w-5 h-5" />
+            Agregar nuevo requisito
+          </Button>
         </div>
 
         {/* Botones Flotantes */}
@@ -432,7 +593,7 @@ export function Checklist() {
             <Send className="w-5 h-5" />
             Finalizar Auditoría
           </Button>
-        </div>  
+        </div>
       </div>
 
       <Dialog open={isFinalizarModalOpen} onOpenChange={setIsFinalizarModalOpen}>
@@ -458,6 +619,193 @@ export function Checklist() {
               disabled={isFinishing}
             >
               {isFinishing ? 'Cargando...' : 'Sí, finalizar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Nuevo Requisito */}
+      <Dialog open={isNuevoReqModalOpen} onOpenChange={(open) => {
+        setIsNuevoReqModalOpen(open);
+        if (!open) setActiveTab('banco');
+      }}>
+        <DialogContent className="sm:max-w-2xl bg-white max-h-[90vh] flex flex-col p-0 overflow-hidden">
+          <div className="p-6 pb-4 border-b">
+            <DialogHeader>
+              <DialogTitle>Agregar nuevo requisito</DialogTitle>
+              <DialogDescription>
+                Añade un requisito al checklist de esta auditoría.
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden flex flex-col">
+            <div className="px-6 pt-2">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="banco">Banco de Requisitos</TabsTrigger>
+                <TabsTrigger value="personalizado">Personalizado</TabsTrigger>
+              </TabsList>
+            </div>
+
+            <TabsContent value="personalizado" className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+              <div className="space-y-2">
+                <Label>Categoría *</Label>
+                <Select value={nuevoReqCategoria} onValueChange={setNuevoReqCategoria}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona una categoría" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categoriasUnicas.map(cat => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                    <SelectItem value="otra" className="text-[#003087] font-medium">+ Nueva categoría</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {nuevoReqCategoria === 'otra' && (
+                <div className="space-y-2">
+                  <Label>Nombre de la nueva categoría *</Label>
+                  <Input
+                    placeholder="Ej: Seguridad Informática"
+                    value={nuevoReqNuevaCategoria}
+                    onChange={(e) => setNuevoReqNuevaCategoria(e.target.value)}
+                  />
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label>Descripción del requisito *</Label>
+                <Textarea
+                  placeholder="Describe el requisito a evaluar..."
+                  className="resize-none h-24"
+                  value={nuevoReqTexto}
+                  onChange={(e) => setNuevoReqTexto(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Normativa aplicable (NOM) <span className="text-gray-400 font-normal">(Opcional)</span></Label>
+                <Input
+                  placeholder="Ej: NOM-001-STPS-2008"
+                  value={nuevoReqNorma}
+                  onChange={(e) => setNuevoReqNorma(e.target.value)}
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 pb-2">
+                <Button variant="outline" onClick={() => setIsNuevoReqModalOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button
+                  className="bg-[#003087] hover:bg-[#002266] text-white"
+                  onClick={handleGuardarNuevoRequisito}
+                  disabled={isSavingNuevoReq}
+                >
+                  {isSavingNuevoReq ? 'Guardando...' : 'Guardar requisito'}
+                </Button>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="banco" className="flex-1 flex flex-col p-6 pt-2 overflow-hidden h-[400px]">
+              <div className="relative mb-4 mt-2">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Buscar por descripción o norma..."
+                  className="pl-9"
+                  value={bancoSearchTerm}
+                  onChange={(e) => setBancoSearchTerm(e.target.value)}
+                />
+              </div>
+
+              {isBancoLoading ? (
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#003087]"></div>
+                </div>
+              ) : (
+                <div className="flex-1 overflow-y-auto border rounded-md p-2 min-h-0">
+                  <div className="space-y-2">
+                    {bancoRequisitos
+                      .filter(r =>
+                        r.pregunta.toLowerCase().includes(bancoSearchTerm.toLowerCase()) ||
+                        (r.normativa_aplicable || '').toLowerCase().includes(bancoSearchTerm.toLowerCase())
+                      )
+                      .map(req => (
+                        <div key={req.id} className="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors group">
+                          <div className="flex-1 pr-4">
+                            <p className="text-[13px] font-medium text-gray-800">{req.pregunta}</p>
+                            <div className="flex flex-wrap gap-2 mt-1.5">
+                              <span className="text-[10px] bg-blue-50 text-[#003087] px-2 py-0.5 rounded-full font-semibold">{req.categoria}</span>
+                              {req.normativa_aplicable && (
+                                <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">{req.normativa_aplicable}</span>
+                              )}
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleAgregarDelBanco(req)}
+                            disabled={isSavingNuevoReq}
+                            className="shrink-0 h-8 text-[#003087] border-[#003087] hover:bg-[#003087] hover:text-white transition-colors"
+                          >
+                            <Plus className="w-3.5 h-3.5 mr-1" />
+                            Agregar
+                          </Button>
+                        </div>
+                      ))}
+                    {bancoRequisitos.filter(r =>
+                      r.pregunta.toLowerCase().includes(bancoSearchTerm.toLowerCase()) ||
+                      (r.normativa_aplicable || '').toLowerCase().includes(bancoSearchTerm.toLowerCase())
+                    ).length === 0 && (
+                        <p className="text-center text-sm text-gray-500 py-8">
+                          {bancoSearchTerm ? "No se encontraron requisitos con esa búsqueda." : "No hay más requisitos disponibles para esta área."}
+                        </p>
+                      )}
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal para ver imagen en primera plana */}
+      <Dialog open={imagenModal.isOpen} onOpenChange={(open) => {
+        if (!open) setImagenModal({ isOpen: false, url: '', itemId: null });
+      }}>
+        <DialogContent className="sm:max-w-4xl bg-black border-none p-0 overflow-hidden rounded-xl shadow-2xl flex flex-col h-[90vh]">
+          <DialogHeader className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/80 to-transparent z-10 flex flex-row items-center justify-between">
+            <DialogTitle className="text-white">Evidencia Fotográfica</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 w-full relative flex items-center justify-center overflow-hidden bg-black/90">
+            {imagenModal.url && (
+              <img 
+                src={imagenModal.url} 
+                alt="Evidencia" 
+                className="max-w-full max-h-full object-contain"
+              />
+            )}
+          </div>
+          <DialogFooter className="bg-gradient-to-t from-black/80 to-transparent absolute bottom-0 left-0 right-0 p-4 z-10 sm:justify-between flex-row">
+            <Button 
+              variant="destructive" 
+              className="gap-2"
+              onClick={() => {
+                if (imagenModal.itemId) {
+                  handleDeleteImage(imagenModal.itemId);
+                }
+              }}
+              disabled={isUploading === imagenModal.itemId}
+            >
+              <Trash2 className="w-4 h-4" />
+              {isUploading === imagenModal.itemId ? 'Eliminando...' : 'Eliminar foto'}
+            </Button>
+            <Button 
+              variant="outline" 
+              className="bg-white/10 text-white border-white/20 hover:bg-white/20 hover:text-white"
+              onClick={() => setImagenModal({ isOpen: false, url: '', itemId: null })}
+            >
+              Cerrar
             </Button>
           </DialogFooter>
         </DialogContent>

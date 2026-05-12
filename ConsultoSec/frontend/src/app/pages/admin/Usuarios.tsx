@@ -242,16 +242,12 @@ export function Usuarios() {
   }
 
   return (
-    <div className="p-8 space-y-6 animate-in fade-in duration-500">
+    <div className="p-8 w-full bg-[#F5F5F5] min-h-screen animate-in fade-in duration-500">
       {/* Page header */}
-      <div className="flex items-center justify-between">
+      <header className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-[20px] font-medium text-gray-900">
-            Usuarios del sistema
-          </h1>
-          <p className="text-[14px] text-gray-500 mt-1">
-            Gestión de administradores y consultores
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900">Usuarios del sistema</h1>
+          <p className="text-gray-500 mt-1">Gestión de administradores y consultores</p>
         </div>
 
         {/* Modal Principal (Nuevo/Editar) */}
@@ -377,113 +373,144 @@ export function Usuarios() {
             </div>
           </DialogContent>
         </Dialog>
+      </header>
 
-      </div>
+      {/* Table card */}
+      <div className="bg-white rounded-xl border border-[#E8E8E8] shadow-sm overflow-hidden">
+        {/* Card header with search */}
+        <div className="p-5 border-b border-[#E8E8E8] bg-gray-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+            <input
+              type="text"
+              placeholder="Buscar por nombre..."
+              className="w-full pl-10 pr-4 py-2 border border-[#E8E8E8] rounded-lg outline-none focus:ring-2 focus:ring-[#003087]/20 transition-all text-sm bg-white"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <p className="text-[13px] text-gray-500 shrink-0">
+            {usuarios.filter(u => `${u.first_name} ${u.last_name}`.toLowerCase().includes(searchTerm.toLowerCase())).length} usuario(s) encontrado(s)
+          </p>
+        </div>
 
-      {/* Search bar */}
-      <div className="relative w-full max-w-sm">
-        <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
-        <Input
-          placeholder="Buscar por nombre..."
-          className="pl-9 h-9 text-[13px]"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-gray-50 text-[11px] uppercase tracking-wider font-semibold text-gray-500 border-b border-[#E8E8E8]">
+                <th className="px-6 py-4">Usuario</th>
+                <th className="px-6 py-4">Correo</th>
+                <th className="px-6 py-4">Rol</th>
+                <th className="px-6 py-4">Estado</th>
+                <th className="px-6 py-4">Registro</th>
+                <th className="px-6 py-4 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E8E8E8]">
+              {usuarios.filter((usuario) => {
+                const nombreCompleto = `${usuario.first_name} ${usuario.last_name}`.trim().toLowerCase();
+                return nombreCompleto.includes(searchTerm.toLowerCase());
+              }).map((usuario) => {
+                const nombreCompleto = `${usuario.first_name} ${usuario.last_name}`.trim() || usuario.username;
+                const displayRole = usuario.role === 'ADMIN' ? 'Administrador' : 'Consultor';
+                const isActivo = usuario.is_active;
+                const initials = nombreCompleto.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase();
 
-      {/* Table */}
-      <div className="bg-white rounded-lg border border-[#E8E8E8] shadow-sm">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-[#F5F5F5] hover:bg-[#F5F5F5]">
-              <TableHead className="text-[14px] font-medium">Nombre</TableHead>
-              <TableHead className="text-[14px] font-medium">Username</TableHead>
-              <TableHead className="text-[14px] font-medium">Correo</TableHead>
-              <TableHead className="text-[14px] font-medium">Rol</TableHead>
-              <TableHead className="text-[14px] font-medium">Estado</TableHead>
-              <TableHead className="text-[14px] font-medium">Fecha de registro</TableHead>
-              <TableHead className="text-[14px] font-medium text-right">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {usuarios.filter((usuario) => {
-              const nombreCompleto = `${usuario.first_name} ${usuario.last_name}`.trim().toLowerCase();
-              return nombreCompleto.includes(searchTerm.toLowerCase());
-            }).map((usuario) => {
-              const nombreCompleto = `${usuario.first_name} ${usuario.last_name}`.trim() || usuario.username;
-              const displayRole = usuario.role === 'ADMIN' ? 'Administrador' : 'Consultor';
-              const isActivo = usuario.is_active;
+                const dateStr = usuario.date_joined
+                  ? new Date(usuario.date_joined).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+                  : "Reciente";
 
-              const dateStr = usuario.date_joined
-                ? new Date(usuario.date_joined).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
-                : "Reciente";
+                return (
+                  <tr
+                    key={usuario.id}
+                    className={`hover:bg-gray-50/80 transition-colors group ${!isActivo ? 'opacity-60' : ''}`}
+                  >
+                    {/* Usuario */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-[13px] font-bold shrink-0 ${displayRole === 'Administrador' ? 'bg-[#003087]' : 'bg-[#1D9E75]'}`}>
+                          {initials}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900 leading-tight">{nombreCompleto}</p>
+                          <p className="text-xs text-gray-400 font-mono">@{usuario.username}</p>
+                        </div>
+                      </div>
+                    </td>
 
-              return (
-                <TableRow
-                  key={usuario.id}
-                  className={`hover:bg-[#F5F5F5] ${!isActivo ? 'bg-gray-50 opacity-60' : ''}`}
-                >
-                  <TableCell className="text-[14px] font-medium">
-                    {nombreCompleto}
-                  </TableCell>
-                  <TableCell className="text-[13px] text-gray-500 font-mono">
-                    @{usuario.username}
-                  </TableCell>
-                  <TableCell className="text-[14px] text-gray-600">
-                    {usuario.email}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      className={`${displayRole === 'Administrador'
-                        ? 'bg-[#003087] text-white'
-                        : 'bg-[#1D9E75] text-white'
-                        } text-[11px] shadow-none border-none py-0.5 px-2 hover:opacity-90`}
-                    >
-                      {displayRole}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={isActivo}
-                        onCheckedChange={() => toggleUsuarioActivo(usuario.id, isActivo)}
-                        className="data-[state=checked]:bg-[#1D9E75]"
-                      />
-                      <span className="text-[13px] text-gray-600 font-medium">
-                        {isActivo ? 'Activo' : 'Inactivo'}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-[14px] text-gray-500">
-                    {dateStr}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => openEditModal(usuario)}
-                        className="h-8 w-8 rounded-md border-[#E8E8E8] hover:bg-blue-50 text-[#003087]"
-                        title="Editar usuario"
+                    {/* Correo */}
+                    <td className="px-6 py-4">
+                      <p className="text-sm text-gray-600">{usuario.email}</p>
+                    </td>
+
+                    {/* Rol */}
+                    <td className="px-6 py-4">
+                      <Badge
+                        className={`${displayRole === 'Administrador'
+                          ? 'bg-[#003087] text-white'
+                          : 'bg-[#1D9E75] text-white'
+                          } text-[11px] shadow-none border-none py-0.5 px-2 hover:opacity-90`}
                       >
-                        <Pencil className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => openPwdModal(usuario)}
-                        className="h-8 w-8 rounded-md border-[#E8E8E8] hover:bg-orange-50 text-orange-600"
-                        title="Cambiar contraseña"
-                      >
-                        <Key className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
+                        {displayRole}
+                      </Badge>
+                    </td>
+
+                    {/* Estado */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={isActivo}
+                          onCheckedChange={() => toggleUsuarioActivo(usuario.id, isActivo)}
+                          className="data-[state=checked]:bg-[#1D9E75]"
+                        />
+                        <span className={`text-[12px] font-medium ${isActivo ? 'text-[#1D9E75]' : 'text-gray-400'}`}>
+                          {isActivo ? 'Activo' : 'Inactivo'}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Registro */}
+                    <td className="px-6 py-4">
+                      <p className="text-xs text-gray-500">{dateStr}</p>
+                    </td>
+
+                    {/* Acciones */}
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => openEditModal(usuario)}
+                          className="h-8 w-8 rounded-lg border-[#E8E8E8] hover:bg-blue-50 text-[#003087]"
+                          title="Editar usuario"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => openPwdModal(usuario)}
+                          className="h-8 w-8 rounded-lg border-[#E8E8E8] hover:bg-orange-50 text-orange-500"
+                          title="Cambiar contraseña"
+                        >
+                          <Key className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
+              {usuarios.filter(u => `${u.first_name} ${u.last_name}`.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-400 text-sm">
+                    No se encontraron usuarios con ese criterio de búsqueda.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
